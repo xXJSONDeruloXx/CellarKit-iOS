@@ -33,16 +33,7 @@ The current external-link path is structurally present, but needs production-sty
 - permission-loss recovery UX,
 - clearer separation between sandbox-friendly links and merely simulated links.
 
-### 3. Add per-container settings editing in the app
-The app should let users edit at least:
-- title,
-- backend preference,
-- graphics backend,
-- memory budget,
-- shader cache budget,
-- touch/controller defaults.
-
-### 4. Add real-device capability detection
+### 3. Add real-device capability detection
 Replace heuristics with stronger evidence where possible:
 - simulator vs device,
 - debugger attachment,
@@ -53,7 +44,7 @@ Replace heuristics with stronger evidence where possible:
 
 ## Tier 2 — still high value
 
-### 5. Improve import UX
+### 4. Improve import UX
 Turn the current button-level flow into a clearer import experience:
 - import mode chooser,
 - file/folder guidance,
@@ -61,45 +52,37 @@ Turn the current button-level flow into a clearer import experience:
 - duplicate-name handling,
 - visible linked vs copied content state.
 
-### 6. Add container management UX
-Support:
-- rename container,
-- delete container,
-- inspect resolved payload path,
-- show content mode and bookmark state,
-- show last-launched timestamp clearly.
+### 5. Improve session and benchmark detail surfaces
+The host shell now has basic detail views, but still needs:
+- fuller log exploration,
+- easier failure triage,
+- export-friendly evidence presentation,
+- richer benchmark metadata.
 
-### 7. Add session and benchmark detail views
-Current history is summary-only. Add:
-- full session event timeline,
-- full log view,
-- benchmark detail page,
-- explicit failure explanation,
-- export-friendly evidence surface.
-
-### 8. Add a runtime play-surface placeholder
-Even before a real runtime is wired up, create a dedicated launch surface that can own:
+### 6. Expand the runtime play-surface placeholder into a real runtime surface
+The placeholder now exists, but still needs to own:
 - runtime state banner,
 - log console toggle,
 - quick menu entry,
-- future overlay/controller hooks.
+- future overlay/controller hooks,
+- eventual real render/input ownership.
 
 ## Tier 3 — after the above
 
-### 9. Add first real runtime experiment
+### 7. Add first real runtime experiment
 Potential order:
 - minimal embedded native loop,
 - diagnostic executable sample,
 - ARM64-friendly narrow content path,
 - only then wider translation/runtime work.
 
-### 10. Add input/control UX scaffolding
+### 8. Add input/control UX scaffolding
 At minimum prove one of:
 - touch overlay stub,
 - controller presence/status,
 - session quick menu.
 
-### 11. Expand benchmark capture
+### 9. Expand benchmark capture
 Capture richer evidence beyond derived session timing:
 - device identity,
 - OS version,

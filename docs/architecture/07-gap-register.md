@@ -41,19 +41,26 @@ Status values used here:
   - duplicate handling, richer validation, and recovery UX are still missing
 
 ### Container detail/settings editor
-- Status: **partial**
+- Status: **implemented**
 - Notes:
   - title editing exists
-  - runtime-profile editing does not yet exist in the app UI
+  - runtime-profile editing now exists for backend, graphics backend, memory budget, shader cache budget, and touch/controller defaults
 
 ### Session detail screen
-- Status: **missing**
+- Status: **implemented**
+- Notes:
+  - selected session detail and event timeline now exist in the host shell
 
 ### Benchmark detail screen
-- Status: **missing**
+- Status: **implemented**
+- Notes:
+  - selected benchmark detail now exists in the host shell
 
 ### Runtime play surface / dedicated launch surface
-- Status: **missing**
+- Status: **partial**
+- Notes:
+  - a launch-surface placeholder now appears after launch
+  - it is not yet a real render/input owning runtime surface
 
 ### Touch overlay UX
 - Status: **missing**
@@ -165,7 +172,7 @@ Status values used here:
 If another agent needs the shortest truthful list, it is:
 1. real runtime bootstrap shim
 2. hardened bookmark lifecycle
-3. runtime-profile settings editor in the app
-4. dedicated session/log/benchmark detail views
-5. play-surface placeholder and eventual real runtime surface
-6. real-device validation
+3. real render/input-owning runtime surface
+4. real-device validation
+5. richer import UX and recovery flows
+6. deeper benchmark and runtime evidence capture

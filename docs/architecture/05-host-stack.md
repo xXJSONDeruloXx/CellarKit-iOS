@@ -95,7 +95,8 @@ Implemented pieces:
 - XcodeGen project spec at `App/CellarApp/project.yml`,
 - SwiftUI app entrypoint at `App/CellarApp/CellarApp/CellarApp.swift`,
 - simulator UI smoke test at `App/CellarApp/CellarAppUITests/CellarAppUITests.swift`,
-- automation scripts in `scripts/dev/`.
+- automation scripts in `scripts/dev/`,
+- runtime-launch placeholder surface presented after successful launch.
 
 ## Current end-to-end flow
 

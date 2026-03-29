@@ -80,9 +80,11 @@ SwiftUI host-shell prototype:
 - sample-container creation,
 - managed-copy import via file importer,
 - external-reference linking via file importer,
+- selected-container detail and runtime settings editing,
 - planner inspection,
-- launch-session history,
-- benchmark summary,
+- launch-session history and session detail,
+- benchmark summary and benchmark detail,
+- launch-surface placeholder after runtime start,
 - latest-log viewer.
 
 ### `CellarPreviewApp`
