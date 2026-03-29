@@ -35,6 +35,10 @@ final class HostShellViewModelTests: XCTestCase {
         await model.launchSelectedContainer()
         XCTAssertEqual(model.sessions.count, 1)
         XCTAssertEqual(model.benchmarkResults.count, 1)
+        XCTAssertNotNil(model.activeSession)
+        XCTAssertTrue(model.isPresentingLaunchSurface)
+        XCTAssertNotNil(model.selectedSession)
+        XCTAssertNotNil(model.selectedBenchmark)
         XCTAssertEqual(model.latestLog, "ui boot\nui frame")
         XCTAssertTrue(model.statusMessage.contains("Launch finished"))
     }
@@ -95,6 +99,42 @@ final class HostShellViewModelTests: XCTestCase {
         XCTAssertTrue(model.containers.isEmpty)
         XCTAssertNil(model.selectedContainer)
         XCTAssertTrue(model.statusMessage.contains("Deleted selected container"))
+    }
+
+    func testViewModelSavesRuntimeProfileChanges() async {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        try? FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let model = HostShellViewModel(
+            paths: HostShellPaths(rootURL: root),
+            capabilityDetector: HostCapabilityDetector(
+                environment: [
+                    "CELLARKIT_DISTRIBUTION_CHANNEL": "developerSigned",
+                    "CELLARKIT_JIT_MODE": "none"
+                ]
+            ),
+            coordinator: makeCoordinator(root: root)
+        )
+
+        await model.refresh()
+        await model.createSampleContainer(title: "Settings Target")
+        await model.saveRuntimeProfile(
+            backendPreference: .wineThreadedInterpreter,
+            graphicsBackend: .wined3dFallback,
+            touchOverlayEnabled: false,
+            prefersPhysicalController: false,
+            memoryBudgetMB: 1024,
+            shaderCacheBudgetMB: 128
+        )
+
+        XCTAssertEqual(model.selectedContainer?.runtimeProfile.backendPreference, .wineThreadedInterpreter)
+        XCTAssertEqual(model.selectedContainer?.runtimeProfile.graphicsBackend, .wined3dFallback)
+        XCTAssertEqual(model.selectedContainer?.runtimeProfile.memoryBudgetMB, 1024)
+        XCTAssertEqual(model.selectedContainer?.runtimeProfile.shaderCacheBudgetMB, 128)
+        XCTAssertEqual(model.selectedContainer?.runtimeProfile.touchOverlayEnabled, false)
+        XCTAssertEqual(model.selectedContainer?.runtimeProfile.prefersPhysicalController, false)
+        XCTAssertTrue(model.statusMessage.contains("Saved runtime settings"))
     }
 
     func testViewModelLinksExternalPayload() async throws {

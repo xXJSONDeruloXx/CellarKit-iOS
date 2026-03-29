@@ -12,9 +12,13 @@ public final class HostShellViewModel: ObservableObject {
     @Published public private(set) var planningDecision: PlanningDecision?
     @Published public private(set) var selectedContainerID: UUID?
     @Published public private(set) var selectedContainer: ContainerDescriptor?
+    @Published public private(set) var selectedSessionID: UUID?
+    @Published public private(set) var selectedBenchmarkID: UUID?
     @Published public private(set) var resolvedContentPath: String?
     @Published public private(set) var benchmarkResults: [BenchmarkRecord] = []
     @Published public private(set) var latestLog: String = ""
+    @Published public private(set) var activeSession: LaunchSessionRecord?
+    @Published public private(set) var isPresentingLaunchSurface = false
     @Published public private(set) var statusMessage: String = "Ready."
     @Published public private(set) var isBusy = false
 
@@ -72,6 +76,20 @@ public final class HostShellViewModel: ObservableObject {
         }
     }
 
+    public var selectedSession: LaunchSessionRecord? {
+        guard let selectedSessionID else {
+            return sessions.first
+        }
+        return sessions.first { $0.id == selectedSessionID } ?? sessions.first
+    }
+
+    public var selectedBenchmark: BenchmarkRecord? {
+        guard let selectedBenchmarkID else {
+            return benchmarkResults.first
+        }
+        return benchmarkResults.first { $0.id == selectedBenchmarkID } ?? benchmarkResults.first
+    }
+
     public func selectContainer(id: UUID?) async {
         selectedContainerID = id
         do {
@@ -79,6 +97,14 @@ public final class HostShellViewModel: ObservableObject {
         } catch {
             statusMessage = "Failed to load container details: \(error.localizedDescription)"
         }
+    }
+
+    public func selectSession(id: UUID?) {
+        selectedSessionID = id
+    }
+
+    public func selectBenchmark(id: UUID?) {
+        selectedBenchmarkID = id
     }
 
     public func createSampleContainer(title: String = "Sample Runtime Probe") async {
@@ -202,6 +228,40 @@ public final class HostShellViewModel: ObservableObject {
         }
     }
 
+    public func saveRuntimeProfile(
+        backendPreference: ExecutionBackend,
+        graphicsBackend: GraphicsBackend,
+        touchOverlayEnabled: Bool,
+        prefersPhysicalController: Bool,
+        memoryBudgetMB: Int,
+        shaderCacheBudgetMB: Int
+    ) async {
+        guard var selectedContainer else {
+            statusMessage = "Select a container first."
+            return
+        }
+
+        isBusy = true
+        defer { isBusy = false }
+
+        do {
+            selectedContainer.runtimeProfile = RuntimeProfile(
+                backendPreference: backendPreference,
+                graphicsBackend: graphicsBackend,
+                touchOverlayEnabled: touchOverlayEnabled,
+                prefersPhysicalController: prefersPhysicalController,
+                memoryBudgetMB: max(256, memoryBudgetMB),
+                shaderCacheBudgetMB: max(32, shaderCacheBudgetMB)
+            )
+            try await coordinator.updateContainer(selectedContainer)
+            await refresh()
+            self.selectedContainer = try await coordinator.loadContainer(id: selectedContainer.id)
+            statusMessage = "Saved runtime settings for \"\(selectedContainer.title)\"."
+        } catch {
+            statusMessage = "Saving runtime settings failed: \(error.localizedDescription)"
+        }
+    }
+
     public func deleteSelectedContainer() async {
         guard let selectedContainerID else {
             statusMessage = "Select a container first."
@@ -215,12 +275,18 @@ public final class HostShellViewModel: ObservableObject {
             try await coordinator.deleteContainer(id: selectedContainerID)
             self.selectedContainerID = nil
             self.selectedContainer = nil
+            self.selectedSessionID = nil
+            self.selectedBenchmarkID = nil
             self.resolvedContentPath = nil
             await refresh()
             statusMessage = "Deleted selected container."
         } catch {
             statusMessage = "Delete failed: \(error.localizedDescription)"
         }
+    }
+
+    public func dismissLaunchSurface() {
+        isPresentingLaunchSurface = false
     }
 
     public func launchSelectedContainer() async {
@@ -241,15 +307,19 @@ public final class HostShellViewModel: ObservableObject {
                 productLane: capabilitySnapshot.productLane
             )
             latestLog = try await coordinator.log(for: session)
+            activeSession = session
             containers = try await coordinator.listContainers()
             sessions = try await coordinator.sessions(for: selectedContainerID)
+            selectedSessionID = sessions.first?.id
             benchmarkResults = try await coordinator.benchmarks(for: selectedContainerID)
+            selectedBenchmarkID = benchmarkResults.first?.id
             planningDecision = try await coordinator.planLaunch(
                 for: selectedContainerID,
                 capabilities: capabilitySnapshot.capabilities,
                 productLane: capabilitySnapshot.productLane
             )
             statusMessage = "Launch finished with state \(session.state.rawValue)."
+            isPresentingLaunchSurface = true
         } catch {
             statusMessage = "Launch failed: \(error.localizedDescription)"
         }
@@ -265,18 +335,34 @@ public final class HostShellViewModel: ObservableObject {
     private func reloadSelectionDetails() async throws {
         guard let selectedContainerID else {
             selectedContainer = nil
+            selectedSessionID = nil
+            selectedBenchmarkID = nil
             resolvedContentPath = nil
             sessions = []
             benchmarkResults = []
             planningDecision = nil
             latestLog = ""
+            activeSession = nil
             return
         }
 
         selectedContainer = try await coordinator.loadContainer(id: selectedContainerID)
         resolvedContentPath = try await coordinator.resolvedContentURL(for: selectedContainerID)?.path
         sessions = try await coordinator.sessions(for: selectedContainerID)
+        if let selectedSessionID,
+           sessions.contains(where: { $0.id == selectedSessionID }) {
+            self.selectedSessionID = selectedSessionID
+        } else {
+            self.selectedSessionID = sessions.first?.id
+        }
+
         benchmarkResults = try await coordinator.benchmarks(for: selectedContainerID)
+        if let selectedBenchmarkID,
+           benchmarkResults.contains(where: { $0.id == selectedBenchmarkID }) {
+            self.selectedBenchmarkID = selectedBenchmarkID
+        } else {
+            self.selectedBenchmarkID = benchmarkResults.first?.id
+        }
         planningDecision = try await coordinator.planLaunch(
             for: selectedContainerID,
             capabilities: capabilitySnapshot.capabilities,

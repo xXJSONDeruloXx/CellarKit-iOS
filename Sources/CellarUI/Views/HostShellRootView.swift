@@ -8,6 +8,12 @@ public struct HostShellRootView: View {
     @State private var isImportingPayload = false
     @State private var selectedImportMode: ImportedContentMode = .managedCopy
     @State private var titleDraft = ""
+    @State private var backendDraft: ExecutionBackend = .wineARM64
+    @State private var graphicsBackendDraft: GraphicsBackend = .dxvkMoltenVK
+    @State private var memoryBudgetDraft = 1536
+    @State private var shaderCacheBudgetDraft = 256
+    @State private var touchOverlayDraft = true
+    @State private var prefersControllerDraft = true
 
     public init(model: HostShellViewModel = HostShellViewModel()) {
         _model = StateObject(wrappedValue: model)
@@ -27,7 +33,9 @@ public struct HostShellRootView: View {
                     selectedContainerSection
                     planningSection
                     sessionsSection
+                    sessionDetailSection
                     benchmarkSection
+                    benchmarkDetailSection
                     logSection
                 }
                 .padding()
@@ -38,7 +46,19 @@ public struct HostShellRootView: View {
             await model.refresh()
         }
         .task(id: model.selectedContainer?.id) {
-            titleDraft = model.selectedContainer?.title ?? ""
+            syncDrafts()
+        }
+        .sheet(
+            isPresented: Binding(
+                get: { model.isPresentingLaunchSurface },
+                set: { isPresented in
+                    if !isPresented {
+                        model.dismissLaunchSurface()
+                    }
+                }
+            )
+        ) {
+            LaunchSurfaceView(model: model)
         }
         .fileImporter(
             isPresented: $isImportingPayload,
@@ -190,8 +210,14 @@ public struct HostShellRootView: View {
                     LabeledContent("Content mode", value: label(for: contentMode))
                 }
                 if let resolvedContentPath = model.resolvedContentPath {
-                    LabeledContent("Resolved content", value: resolvedContentPath)
-                        .font(.caption)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Resolved content")
+                            .font(.subheadline.weight(.semibold))
+                        Text(resolvedContentPath)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .textSelection(.enabled)
+                    }
                 }
                 if let lastLaunchedAt = container.lastLaunchedAt {
                     LabeledContent(
@@ -199,6 +225,35 @@ public struct HostShellRootView: View {
                         value: lastLaunchedAt.formatted(date: .abbreviated, time: .standard)
                     )
                 }
+
+                Divider()
+
+                Text("Runtime Settings")
+                    .font(.subheadline.weight(.semibold))
+
+                Picker("Backend preference", selection: $backendDraft) {
+                    ForEach(ExecutionBackend.allCases.filter { $0 != .unsupported }, id: \.self) { backend in
+                        Text(label(for: backend)).tag(backend)
+                    }
+                }
+                .pickerStyle(.menu)
+
+                Picker("Graphics backend", selection: $graphicsBackendDraft) {
+                    ForEach(GraphicsBackend.allCases, id: \.self) { backend in
+                        Text(label(for: backend)).tag(backend)
+                    }
+                }
+                .pickerStyle(.menu)
+
+                Stepper("Memory budget: \(memoryBudgetDraft) MB", value: $memoryBudgetDraft, in: 256...4096, step: 128)
+                Stepper(
+                    "Shader cache budget: \(shaderCacheBudgetDraft) MB",
+                    value: $shaderCacheBudgetDraft,
+                    in: 32...1024,
+                    step: 32
+                )
+                Toggle("Touch overlay enabled", isOn: $touchOverlayDraft)
+                Toggle("Prefer physical controller", isOn: $prefersControllerDraft)
 
                 HStack {
                     Button("Save Title") {
@@ -208,6 +263,22 @@ public struct HostShellRootView: View {
                     }
                     .buttonStyle(.bordered)
                     .disabled(model.isBusy || titleDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+                    Button("Save Runtime Settings") {
+                        Task {
+                            await model.saveRuntimeProfile(
+                                backendPreference: backendDraft,
+                                graphicsBackend: graphicsBackendDraft,
+                                touchOverlayEnabled: touchOverlayDraft,
+                                prefersPhysicalController: prefersControllerDraft,
+                                memoryBudgetMB: memoryBudgetDraft,
+                                shaderCacheBudgetMB: shaderCacheBudgetDraft
+                            )
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .accessibilityIdentifier("saveRuntimeSettingsButton")
+                    .disabled(model.isBusy)
 
                     Button("Delete Container", role: .destructive) {
                         Task {
@@ -265,17 +336,65 @@ public struct HostShellRootView: View {
                     .foregroundStyle(.secondary)
             } else {
                 ForEach(model.sessions.prefix(5)) { session in
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("\(label(for: session.state)) • \(label(for: session.backend))")
-                            .font(.subheadline.weight(.semibold))
-                        Text(session.startedAt.formatted(date: .abbreviated, time: .standard))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                    Button {
+                        model.selectSession(id: session.id)
+                    } label: {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("\(label(for: session.state)) • \(label(for: session.backend))")
+                                .font(.subheadline.weight(.semibold))
+                            Text(session.startedAt.formatted(date: .abbreviated, time: .standard))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(10)
+                        .background(
+                            (model.selectedSession?.id == session.id ? Color.accentColor.opacity(0.15) : Color.secondary.opacity(0.08)),
+                            in: RoundedRectangle(cornerRadius: 10)
+                        )
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(10)
-                    .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+                    .buttonStyle(.plain)
                 }
+            }
+        }
+    }
+
+    private var sessionDetailSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Session Detail")
+                .font(.headline)
+
+            if let session = model.selectedSession {
+                LabeledContent("State", value: label(for: session.state))
+                LabeledContent("Backend", value: label(for: session.backend))
+                if let exitCode = session.lastExitCode {
+                    LabeledContent("Exit code", value: String(exitCode))
+                }
+                if let endedAt = session.endedAt {
+                    LabeledContent("Ended", value: endedAt.formatted(date: .abbreviated, time: .standard))
+                }
+
+                if !session.events.isEmpty {
+                    Text("Event Timeline")
+                        .font(.subheadline.weight(.semibold))
+                    ForEach(session.events.prefix(8)) { event in
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(label(for: event.kind))
+                                .font(.caption.weight(.semibold))
+                            if let message = event.message, !message.isEmpty {
+                                Text(message)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(8)
+                        .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
+                    }
+                }
+            } else {
+                Text("No session selected.")
+                    .foregroundStyle(.secondary)
             }
         }
     }
@@ -290,20 +409,57 @@ public struct HostShellRootView: View {
                     .foregroundStyle(.secondary)
             } else {
                 ForEach(model.benchmarkResults.prefix(3)) { benchmark in
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("\(label(for: benchmark.backend)) • \(label(for: benchmark.jitMode))")
-                            .font(.subheadline.weight(.semibold))
-                        Text("Recorded \(benchmark.recordedAt.formatted(date: .abbreviated, time: .shortened))")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Text(metricsSummary(for: benchmark.metrics))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                    Button {
+                        model.selectBenchmark(id: benchmark.id)
+                    } label: {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("\(label(for: benchmark.backend)) • \(label(for: benchmark.jitMode))")
+                                .font(.subheadline.weight(.semibold))
+                            Text("Recorded \(benchmark.recordedAt.formatted(date: .abbreviated, time: .shortened))")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Text(metricsSummary(for: benchmark.metrics))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(10)
+                        .background(
+                            (model.selectedBenchmark?.id == benchmark.id ? Color.accentColor.opacity(0.15) : Color.secondary.opacity(0.08)),
+                            in: RoundedRectangle(cornerRadius: 10)
+                        )
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(10)
-                    .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+                    .buttonStyle(.plain)
                 }
+            }
+        }
+    }
+
+    private var benchmarkDetailSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Benchmark Detail")
+                .font(.headline)
+
+            if let benchmark = model.selectedBenchmark {
+                LabeledContent("Backend", value: label(for: benchmark.backend))
+                LabeledContent("JIT", value: label(for: benchmark.jitMode))
+                LabeledContent("Lane", value: label(for: benchmark.productLane))
+                LabeledContent("Content mode", value: benchmark.contentMode.map { label(for: $0) } ?? "Unknown")
+                LabeledContent("Recorded", value: benchmark.recordedAt.formatted(date: .abbreviated, time: .standard))
+                Text(metricsSummary(for: benchmark.metrics))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                if !benchmark.plannerWarnings.isEmpty {
+                    Text("Planner warnings")
+                        .font(.subheadline.weight(.semibold))
+                    ForEach(Array(benchmark.plannerWarnings.enumerated()), id: \.offset) { _, warning in
+                        Text("• \(warning)")
+                            .font(.caption)
+                    }
+                }
+            } else {
+                Text("No benchmark selected.")
+                    .foregroundStyle(.secondary)
             }
         }
     }
@@ -326,6 +482,29 @@ public struct HostShellRootView: View {
                 }
             }
         }
+    }
+
+    private func syncDrafts() {
+        guard let container = model.selectedContainer else {
+            titleDraft = ""
+            backendDraft = .wineARM64
+            graphicsBackendDraft = .dxvkMoltenVK
+            memoryBudgetDraft = 1536
+            shaderCacheBudgetDraft = 256
+            touchOverlayDraft = true
+            prefersControllerDraft = true
+            return
+        }
+
+        titleDraft = container.title
+        backendDraft = container.runtimeProfile.backendPreference == .unsupported
+            ? .wineARM64
+            : container.runtimeProfile.backendPreference
+        graphicsBackendDraft = container.runtimeProfile.graphicsBackend
+        memoryBudgetDraft = container.runtimeProfile.memoryBudgetMB
+        shaderCacheBudgetDraft = container.runtimeProfile.shaderCacheBudgetMB
+        touchOverlayDraft = container.runtimeProfile.touchOverlayEnabled
+        prefersControllerDraft = container.runtimeProfile.prefersPhysicalController
     }
 
     private func metricsSummary(for metrics: LaunchSessionMetrics) -> String {
