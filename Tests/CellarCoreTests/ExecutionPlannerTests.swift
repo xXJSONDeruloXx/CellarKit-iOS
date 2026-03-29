@@ -102,4 +102,53 @@ final class ExecutionPlannerTests: XCTestCase {
         XCTAssertEqual(decision.backend, .diagnosticVM)
         XCTAssertTrue(decision.blockers.isEmpty)
     }
+
+    func testConstrainedPublicLaneWithholdsTranslatorAndUsesInterpreter() {
+        let capabilities = RuntimeCapabilities(
+            distributionChannel: .developerSigned,
+            jitMode: .debuggerAttached,
+            hasIncreasedMemoryLimit: true,
+            isDebuggerAttached: true
+        )
+        let request = GameLaunchRequest(
+            title: "Constrained Lane x64 Game",
+            storefront: .localImport,
+            acquisitionMode: .localImport,
+            guestArchitecture: .windowsX64,
+            allowsInterpreterFallback: true
+        )
+
+        let decision = planner.plan(
+            request: request,
+            capabilities: capabilities,
+            productLane: .constrainedPublic
+        )
+
+        XCTAssertEqual(decision.backend, .wineThreadedInterpreter)
+        XCTAssertEqual(decision.policyRisk, .medium)
+        XCTAssertTrue(decision.warnings.contains { $0.contains("does not allow dynarec") })
+    }
+
+    func testConstrainedPublicLaneBlocksStorefrontDownloadEvenOffAppStore() {
+        let capabilities = RuntimeCapabilities(
+            distributionChannel: .developerSigned,
+            jitMode: .debuggerAttached
+        )
+        let request = GameLaunchRequest(
+            title: "Constrained Storefront Game",
+            storefront: .steam,
+            acquisitionMode: .storefrontDownload,
+            guestArchitecture: .windowsX64
+        )
+
+        let decision = planner.plan(
+            request: request,
+            capabilities: capabilities,
+            productLane: .constrainedPublic
+        )
+
+        XCTAssertEqual(decision.backend, .unsupported)
+        XCTAssertEqual(decision.policyRisk, .blocked)
+        XCTAssertFalse(decision.blockers.isEmpty)
+    }
 }

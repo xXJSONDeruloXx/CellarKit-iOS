@@ -10,6 +10,11 @@ final class ContainerModelsTests: XCTestCase {
             acquisitionMode: .localImport,
             guestArchitecture: .windowsARM64,
             importPath: "/private/var/mobile/Documents/Sample Game",
+            contentReference: ImportedContentReference(
+                mode: .managedCopy,
+                pathHint: "Containers/Sample Game/GamePayload",
+                originalFilename: "Sample Game.exe"
+            ),
             runtimeProfile: RuntimeProfile(
                 backendPreference: .wineARM64,
                 graphicsBackend: .dxvkMoltenVK,
