@@ -43,6 +43,7 @@ Current status:
 - a preview SwiftUI shell exists in `CellarUI` / `CellarPreviewApp`,
 - a first dedicated iOS app target now exists at `App/CellarApp`,
 - simulator UI smoke testing is automated,
+- an initial SwiftUI file-import path now exists,
 - real device classification is still pending.
 
 Acceptance tests:
@@ -83,8 +84,8 @@ Deliverables:
 - stdout/stderr/event plumbing into Swift.
 
 Current status:
-- a simulated runtime bridge and end-to-end launch orchestration now exist,
-- the real native bridge is still the next major runtime milestone.
+- a native C-backed bridge stub and end-to-end launch orchestration now exist,
+- the real runtime bridge is still the next major runtime milestone.
 
 Acceptance tests:
 - start and stop runtime without app crash,

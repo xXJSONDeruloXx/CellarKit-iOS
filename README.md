@@ -9,6 +9,7 @@ Current state of the repo:
 - architecture docs are in place,
 - `CellarCore` planning/persistence exists,
 - `CellarHost` launch orchestration exists,
+- `CellarRuntimeBridge` provides a native C-backed bridge stub,
 - `CellarUI` and `CellarPreviewApp` provide a runnable SwiftUI host-shell prototype on Apple platforms,
 - `App/CellarApp` provides the first dedicated iOS app target and simulator UI smoke test path.
 
@@ -66,20 +67,24 @@ Apple-host integration and orchestration scaffolding:
 - per-session JSON + log persistence,
 - benchmark capture and persistence,
 - managed-copy / bookmark import abstractions,
-- simulated runtime bridge,
 - actor-based host coordinator.
+
+### `CellarRuntimeBridge`
+A native C-backed bridge stub that exercises callback plumbing and event translation before a real Wine/runtime integration exists.
 
 ### `CellarUI`
 SwiftUI host-shell prototype:
 - capability summary,
 - container list,
 - sample-container creation,
+- managed-copy import via file importer,
 - planner inspection,
 - launch-session history,
+- benchmark summary,
 - latest-log viewer.
 
 ### `CellarPreviewApp`
-A lightweight preview shell that exercises the host stack with a simulated runtime.
+A lightweight preview shell that exercises the host stack using the native bridge stub.
 
 ### `CellarApp`
 A generated Xcode/iOS app target plus UI smoke test harness for simulator validation.
@@ -122,9 +127,9 @@ This now verifies a real iOS Simulator app flow and stores `.xcresult` bundles o
 
 ## Most important next implementation steps
 
-1. Replace the simulated runtime bridge with a native bridge spike.
+1. Replace the current native stub bridge with a real runtime bridge spike.
 2. Replace heuristic capability detection with real-device classification.
-3. Implement security-scoped bookmark import and persistent payload access.
-4. Add durable launch metrics and experiment-result capture.
+3. Harden security-scoped bookmark import and persistent payload access.
+4. Add richer launch metrics beyond the current derived benchmarks.
 5. Prove one narrow interactive sample path on device.
-6. Expand the iOS app beyond the current smoke-test host shell.
+6. Expand the iOS app beyond the current host shell and smoke-test flow.

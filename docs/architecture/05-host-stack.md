@@ -76,6 +76,16 @@ Purpose:
 - make the host flow runnable before an iOS app target exists,
 - validate that the orchestration layers are coherent end to end.
 
+## `CellarRuntimeBridge`
+
+This module now provides a native C-backed bridge stub.
+
+Implemented pieces:
+- C bridge API in `Sources/CCellarBridgeStub/`,
+- Swift wrapper in `Sources/CellarRuntimeBridge/NativeRuntimeBridge.swift`,
+- event translation into `RuntimeBridgeEvent`,
+- tests proving callback-driven happy/failure paths.
+
 ## `CellarApp`
 
 This is the first dedicated iOS app target.
@@ -101,9 +111,8 @@ Implemented pieces:
 
 The following pieces are placeholders and must be replaced later:
 - actual iOS entitlement/runtime detection,
-- security-scoped bookmark resolution,
-- real runtime bootstrap,
-- native log callback wiring,
+- hardened security-scoped bookmark resolution,
+- real Wine/runtime bootstrap,
 - real render/input lifecycle handling.
 
 ## Why this is still useful
