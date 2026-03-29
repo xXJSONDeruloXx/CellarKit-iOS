@@ -146,6 +146,21 @@ public actor HostCoordinator {
         return CreatedContainerResult(descriptor: descriptor, planningDecision: decision)
     }
 
+    public func updateContainer(_ descriptor: ContainerDescriptor) throws {
+        try containerStore.save(descriptor)
+    }
+
+    public func deleteContainer(id: UUID) throws {
+        guard let descriptor = try containerStore.load(id: id) else {
+            return
+        }
+
+        try contentImporter?.deleteImportedPayload(for: descriptor.contentReference)
+        try sessionStore.deleteAll(containerID: id)
+        try benchmarkStore?.deleteAll(containerID: id)
+        try containerStore.delete(id: id)
+    }
+
     public func resolvedContentURL(for containerID: UUID) throws -> URL? {
         guard let descriptor = try containerStore.load(id: containerID) else {
             throw HostCoordinatorError.containerNotFound(containerID)

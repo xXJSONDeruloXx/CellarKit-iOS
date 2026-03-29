@@ -11,6 +11,8 @@ public final class HostShellViewModel: ObservableObject {
     @Published public private(set) var sessions: [LaunchSessionRecord] = []
     @Published public private(set) var planningDecision: PlanningDecision?
     @Published public private(set) var selectedContainerID: UUID?
+    @Published public private(set) var selectedContainer: ContainerDescriptor?
+    @Published public private(set) var resolvedContentPath: String?
     @Published public private(set) var benchmarkResults: [BenchmarkRecord] = []
     @Published public private(set) var latestLog: String = ""
     @Published public private(set) var statusMessage: String = "Ready."
@@ -180,6 +182,47 @@ public final class HostShellViewModel: ObservableObject {
         }
     }
 
+    public func renameSelectedContainer(to newTitle: String) async {
+        guard var selectedContainer, !newTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            statusMessage = "Enter a non-empty title before saving changes."
+            return
+        }
+
+        isBusy = true
+        defer { isBusy = false }
+
+        do {
+            selectedContainer.title = newTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+            try await coordinator.updateContainer(selectedContainer)
+            await refresh()
+            self.selectedContainer = try await coordinator.loadContainer(id: selectedContainer.id)
+            statusMessage = "Renamed container to \"\(selectedContainer.title)\"."
+        } catch {
+            statusMessage = "Rename failed: \(error.localizedDescription)"
+        }
+    }
+
+    public func deleteSelectedContainer() async {
+        guard let selectedContainerID else {
+            statusMessage = "Select a container first."
+            return
+        }
+
+        isBusy = true
+        defer { isBusy = false }
+
+        do {
+            try await coordinator.deleteContainer(id: selectedContainerID)
+            self.selectedContainerID = nil
+            self.selectedContainer = nil
+            self.resolvedContentPath = nil
+            await refresh()
+            statusMessage = "Deleted selected container."
+        } catch {
+            statusMessage = "Delete failed: \(error.localizedDescription)"
+        }
+    }
+
     public func launchSelectedContainer() async {
         guard let selectedContainerID else {
             statusMessage = "Select or create a container first."
@@ -221,6 +264,8 @@ public final class HostShellViewModel: ObservableObject {
 
     private func reloadSelectionDetails() async throws {
         guard let selectedContainerID else {
+            selectedContainer = nil
+            resolvedContentPath = nil
             sessions = []
             benchmarkResults = []
             planningDecision = nil
@@ -228,6 +273,8 @@ public final class HostShellViewModel: ObservableObject {
             return
         }
 
+        selectedContainer = try await coordinator.loadContainer(id: selectedContainerID)
+        resolvedContentPath = try await coordinator.resolvedContentURL(for: selectedContainerID)?.path
         sessions = try await coordinator.sessions(for: selectedContainerID)
         benchmarkResults = try await coordinator.benchmarks(for: selectedContainerID)
         planningDecision = try await coordinator.planLaunch(

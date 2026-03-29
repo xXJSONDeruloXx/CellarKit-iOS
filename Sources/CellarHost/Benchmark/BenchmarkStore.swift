@@ -43,6 +43,14 @@ public struct BenchmarkStore {
             .sorted { $0.recordedAt > $1.recordedAt }
     }
 
+    public func deleteAll(containerID: UUID) throws {
+        let directoryURL = benchmarksDirectory(for: containerID)
+        guard fileManager.fileExists(atPath: directoryURL.path()) else {
+            return
+        }
+        try fileManager.removeItem(at: directoryURL)
+    }
+
     private func benchmarksDirectory(for containerID: UUID) -> URL {
         rootURL
             .appending(path: containerID.uuidString)

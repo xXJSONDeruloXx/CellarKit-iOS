@@ -7,6 +7,7 @@ public struct HostShellRootView: View {
     @StateObject private var model: HostShellViewModel
     @State private var isImportingPayload = false
     @State private var selectedImportMode: ImportedContentMode = .managedCopy
+    @State private var titleDraft = ""
 
     public init(model: HostShellViewModel = HostShellViewModel()) {
         _model = StateObject(wrappedValue: model)
@@ -23,6 +24,7 @@ public struct HostShellRootView: View {
         } detail: {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
+                    selectedContainerSection
                     planningSection
                     sessionsSection
                     benchmarkSection
@@ -34,6 +36,9 @@ public struct HostShellRootView: View {
         }
         .task {
             await model.refresh()
+        }
+        .task(id: model.selectedContainer?.id) {
+            titleDraft = model.selectedContainer?.title ?? ""
         }
         .fileImporter(
             isPresented: $isImportingPayload,
@@ -165,6 +170,57 @@ public struct HostShellRootView: View {
             .buttonStyle(.borderedProminent)
             .accessibilityIdentifier("launchSelectedButton")
             .disabled(model.isBusy || model.selectedContainerID == nil)
+        }
+    }
+
+    private var selectedContainerSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Selected Container")
+                .font(.headline)
+
+            if let container = model.selectedContainer {
+                TextField("Container title", text: $titleDraft)
+                    .textFieldStyle(.roundedBorder)
+                    .accessibilityIdentifier("containerTitleField")
+
+                LabeledContent("Storefront", value: label(for: container.storefront))
+                LabeledContent("Architecture", value: label(for: container.guestArchitecture))
+                LabeledContent("Acquisition", value: label(for: container.acquisitionMode))
+                if let contentMode = container.contentReference?.mode {
+                    LabeledContent("Content mode", value: label(for: contentMode))
+                }
+                if let resolvedContentPath = model.resolvedContentPath {
+                    LabeledContent("Resolved content", value: resolvedContentPath)
+                        .font(.caption)
+                }
+                if let lastLaunchedAt = container.lastLaunchedAt {
+                    LabeledContent(
+                        "Last launched",
+                        value: lastLaunchedAt.formatted(date: .abbreviated, time: .standard)
+                    )
+                }
+
+                HStack {
+                    Button("Save Title") {
+                        Task {
+                            await model.renameSelectedContainer(to: titleDraft)
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(model.isBusy || titleDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+                    Button("Delete Container", role: .destructive) {
+                        Task {
+                            await model.deleteSelectedContainer()
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(model.isBusy)
+                }
+            } else {
+                Text("Select a container to inspect or edit its metadata.")
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 

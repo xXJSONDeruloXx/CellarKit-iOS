@@ -156,6 +156,61 @@ final class HostCoordinatorTests: XCTestCase {
         XCTAssertEqual(resolvedURL?.standardizedFileURL.path, sourceURL.standardizedFileURL.path)
     }
 
+    func testCoordinatorDeleteContainerRemovesMetadataAndArtifacts() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let sourceURL = root.appending(path: "DeleteMe.exe")
+        try Data("payload".utf8).write(to: sourceURL)
+
+        let coordinator = HostCoordinator(
+            containerStore: ContainerStore(rootURL: root.appending(path: "Containers")),
+            sessionStore: LaunchSessionStore(rootURL: root.appending(path: "Sessions")),
+            benchmarkStore: BenchmarkStore(rootURL: root.appending(path: "Benchmarks")),
+            contentImporter: ContentImportCoordinator(
+                managedContentRootURL: root.appending(path: "ManagedContent"),
+                bookmarkStore: BookmarkStore(rootURL: root.appending(path: "Bookmarks"))
+            ),
+            bridge: SimulatedRuntimeBridge(startupDelay: .milliseconds(0), lineDelay: .milliseconds(0))
+        )
+
+        let capabilities = RuntimeCapabilities(
+            distributionChannel: .developerSigned,
+            jitMode: .none
+        )
+        let request = GameLaunchRequest(
+            title: "Delete Me",
+            storefront: .localImport,
+            acquisitionMode: .localImport,
+            guestArchitecture: .windowsARM64
+        )
+
+        let created = try await coordinator.createManagedCopyContainer(
+            sourceURL: sourceURL,
+            request: request,
+            capabilities: capabilities,
+            productLane: .research,
+            preferredFilename: "DeleteMe.exe"
+        )
+        _ = try await coordinator.launch(
+            containerID: created.descriptor.id,
+            capabilities: capabilities,
+            productLane: .research
+        )
+
+        try await coordinator.deleteContainer(id: created.descriptor.id)
+
+        let loaded = try await coordinator.loadContainer(id: created.descriptor.id)
+        let sessions = try await coordinator.sessions(for: created.descriptor.id)
+        let benchmarks = try await coordinator.benchmarks(for: created.descriptor.id)
+
+        XCTAssertNil(loaded)
+        XCTAssertTrue(sessions.isEmpty)
+        XCTAssertTrue(benchmarks.isEmpty)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: created.descriptor.importPath!))
+    }
+
     func testCoordinatorPersistsPlanningFailureAsSession() async throws {
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }

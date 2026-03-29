@@ -64,6 +64,14 @@ public struct LaunchSessionStore {
         return try String(contentsOf: url, encoding: .utf8)
     }
 
+    public func deleteAll(containerID: UUID) throws {
+        let directoryURL = sessionsDirectory(for: containerID)
+        guard fileManager.fileExists(atPath: directoryURL.path()) else {
+            return
+        }
+        try fileManager.removeItem(at: directoryURL)
+    }
+
     private func sessionsDirectory(for containerID: UUID) -> URL {
         rootURL
             .appending(path: containerID.uuidString)

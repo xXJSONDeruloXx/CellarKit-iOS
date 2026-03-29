@@ -87,6 +87,32 @@ public struct ContentImportCoordinator {
         }
     }
 
+    public func deleteImportedPayload(for reference: ImportedContentReference?) throws {
+        guard let reference else {
+            return
+        }
+
+        switch reference.mode {
+        case .managedCopy:
+            guard let pathHint = reference.pathHint else {
+                return
+            }
+            let payloadURL = URL(fileURLWithPath: pathHint)
+            let containerRoot = payloadURL.deletingLastPathComponent().deletingLastPathComponent()
+            if fileManager.fileExists(atPath: containerRoot.path()) {
+                try fileManager.removeItem(at: containerRoot)
+            } else if fileManager.fileExists(atPath: payloadURL.path()) {
+                try fileManager.removeItem(at: payloadURL)
+            }
+        case .externalSecurityScopedReference:
+            if let bookmarkIdentifier = reference.bookmarkIdentifier {
+                try bookmarkStore.delete(identifier: bookmarkIdentifier)
+            }
+        case .bundledSample, .storefrontManagedDownload:
+            break
+        }
+    }
+
     public func registerBundledSample(
         named _: String,
         pathHint: String,

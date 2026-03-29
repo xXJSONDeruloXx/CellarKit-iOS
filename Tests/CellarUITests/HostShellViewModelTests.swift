@@ -67,6 +67,36 @@ final class HostShellViewModelTests: XCTestCase {
         XCTAssertTrue(model.statusMessage.contains("Imported payload"))
     }
 
+    func testViewModelRenamesAndDeletesSelectedContainer() async {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        try? FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let model = HostShellViewModel(
+            paths: HostShellPaths(rootURL: root),
+            capabilityDetector: HostCapabilityDetector(
+                environment: [
+                    "CELLARKIT_DISTRIBUTION_CHANNEL": "developerSigned",
+                    "CELLARKIT_JIT_MODE": "debuggerAttached",
+                    "CELLARKIT_DEBUGGER_ATTACHED": "true"
+                ]
+            ),
+            coordinator: makeCoordinator(root: root)
+        )
+
+        await model.refresh()
+        await model.createSampleContainer(title: "Before Rename")
+        XCTAssertEqual(model.containers.first?.title, "Before Rename")
+
+        await model.renameSelectedContainer(to: "After Rename")
+        XCTAssertEqual(model.selectedContainer?.title, "After Rename")
+
+        await model.deleteSelectedContainer()
+        XCTAssertTrue(model.containers.isEmpty)
+        XCTAssertNil(model.selectedContainer)
+        XCTAssertTrue(model.statusMessage.contains("Deleted selected container"))
+    }
+
     func testViewModelLinksExternalPayload() async throws {
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
