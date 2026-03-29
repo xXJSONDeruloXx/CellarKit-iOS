@@ -45,11 +45,14 @@ Status:
 
 The current Swift package is intentionally small. It models:
 - distribution channels,
+- product lanes,
 - JIT/execution modes,
 - guest architectures,
 - acquisition modes,
 - backend selection,
-- policy risk classification.
+- policy risk classification,
+- container metadata,
+- JSON-backed container persistence.
 
 This is here to support future agents and future iOS UI work with deterministic tests before the runtime bridge exists.
 

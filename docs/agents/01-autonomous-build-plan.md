@@ -27,11 +27,13 @@ Before changing code materially:
 
 Implement and test pure-Swift domain models for:
 - distribution channels,
+- product lanes,
 - JIT/execution modes,
 - guest architectures,
 - acquisition modes,
 - backend planning decisions,
-- policy risk grading.
+- policy risk grading,
+- container metadata and persistence.
 
 Expected output:
 - deterministic unit tests,
