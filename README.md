@@ -32,6 +32,7 @@ Current state of the repo:
 - `docs/architecture/04-first-mvp-spec.md`
 - `docs/architecture/05-host-stack.md`
 - `docs/architecture/06-local-testing.md`
+- `docs/architecture/07-gap-register.md`
 
 ### Agent guidance
 - `docs/agents/01-autonomous-build-plan.md`
