@@ -112,6 +112,10 @@ Each experiment should produce:
 - pass/fail judgement
 - next recommendation
 
+Current repo status:
+- `CellarHost` now persists derived benchmark records from each launch session,
+- richer device/performance measurements still need real runtime and real-device probes.
+
 ## Simple result template
 
 ```markdown

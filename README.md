@@ -64,6 +64,7 @@ Apple-host integration and orchestration scaffolding:
 - capability detection overrides and heuristics,
 - launch-session models,
 - per-session JSON + log persistence,
+- benchmark capture and persistence,
 - managed-copy / bookmark import abstractions,
 - simulated runtime bridge,
 - actor-based host coordinator.
@@ -116,6 +117,8 @@ Run the simulator smoke test:
 ```bash
 ./scripts/dev/test-ios-simulator.sh
 ```
+
+This now verifies a real iOS Simulator app flow and stores `.xcresult` bundles on the external drive.
 
 ## Most important next implementation steps
 

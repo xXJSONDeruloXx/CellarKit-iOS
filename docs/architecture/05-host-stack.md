@@ -36,11 +36,14 @@ Responsibilities already implemented:
 - capability detection with environment overrides,
 - launch-session record models,
 - per-container session persistence,
+- benchmark capture derived from launch sessions,
 - bookmark and managed-copy import abstractions,
 - a simulated runtime bridge,
 - actor-based orchestration through `HostCoordinator`.
 
 Important files:
+- `Sources/CellarHost/Benchmark/BenchmarkModels.swift`
+- `Sources/CellarHost/Benchmark/BenchmarkStore.swift`
 - `Sources/CellarHost/Environment/HostCapabilityDetector.swift`
 - `Sources/CellarHost/Import/BookmarkStore.swift`
 - `Sources/CellarHost/Import/ContentImportCoordinator.swift`
