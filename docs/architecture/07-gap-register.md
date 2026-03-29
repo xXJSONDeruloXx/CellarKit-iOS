@@ -130,6 +130,15 @@ Status values used here:
   - C-backed callback bridge exists
   - launch configuration translation exists
 
+### Launch target metadata and bootstrap validation
+- Status: **partial**
+- Notes:
+  - containers now persist an `entryExecutableRelativePath`
+  - managed-copy and external-link imports attempt to infer a `.exe` entry target
+  - runtime launch configuration now resolves an executable path when possible
+  - the native stub now fails early when a non-sample payload has no resolvable launch executable
+  - manual entry-target editing and real execution of that target are still missing
+
 ### Real runtime bootstrap
 - Status: **missing**
 
@@ -170,9 +179,9 @@ Status values used here:
 ## Immediate highest-value missing pieces
 
 If another agent needs the shortest truthful list, it is:
-1. real runtime bootstrap shim
+1. real runtime bootstrap shim that consumes the resolved launch executable
 2. hardened bookmark lifecycle
 3. real render/input-owning runtime surface
 4. real-device validation
-5. richer import UX and recovery flows
+5. richer import UX, including manual entry-executable override/recovery flows
 6. deeper benchmark and runtime evidence capture

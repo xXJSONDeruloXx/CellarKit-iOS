@@ -20,6 +20,7 @@ These items are no longer the next priority because they already exist in some f
 ### 1. Replace the native stub with a real runtime bootstrap shim
 Build the first true bridge layer that can:
 - assemble launch config into native runtime parameters,
+- consume the resolved launch executable path from container metadata,
 - start a real embedded runtime thread/process loop,
 - surface stdout/stderr/log callbacks,
 - stop cleanly,
@@ -50,7 +51,8 @@ Turn the current button-level flow into a clearer import experience:
 - file/folder guidance,
 - better success/failure messaging,
 - duplicate-name handling,
-- visible linked vs copied content state.
+- visible linked vs copied content state,
+- manual entry-executable override when inference is wrong.
 
 ### 5. Improve session and benchmark detail surfaces
 The host shell now has basic detail views, but still needs:

@@ -58,6 +58,7 @@ Pure domain and planning logic:
 - backend planning,
 - policy risk grading,
 - container metadata,
+- executable-entry metadata,
 - container persistence,
 - runtime-profile defaults.
 
@@ -71,7 +72,7 @@ Apple-host integration and orchestration scaffolding:
 - actor-based host coordinator.
 
 ### `CellarRuntimeBridge`
-A native C-backed bridge stub that exercises callback plumbing, launch-configuration translation, and event translation before a real Wine/runtime integration exists.
+A native C-backed bridge stub that exercises callback plumbing, launch-configuration translation, executable-target path resolution, early bootstrap validation, and event translation before a real Wine/runtime integration exists.
 
 ### `CellarUI`
 SwiftUI host-shell prototype:

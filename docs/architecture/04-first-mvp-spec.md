@@ -101,6 +101,44 @@ A build counts as MVP only if all are true:
 - input is usable enough to interact or confirm liveness,
 - there is a repeatable test path for another agent to reproduce the result.
 
+## Reality check — current distance to a real Windows executable
+
+As of the current repository state:
+- the **host/container shell is substantially real**,
+- the **runtime execution layer is still mostly scaffolding**,
+- the project still **does not execute Windows instructions yet**.
+
+A truthful status summary is:
+- container/import/persistence/session UX is far along,
+- backend planning is far along,
+- native bridge/configuration seams are in place,
+- executable-entry metadata and bootstrap validation now exist,
+- real runtime bootstrap, real Wine/runtime integration, and real render/input/audio ownership are still ahead.
+
+The shortest milestone ladder from here is:
+
+### First real Windows EXE proof-of-life
+Needs all of:
+- a real runtime bootstrap shim instead of the current stub,
+- actual consumption of the resolved launch executable path,
+- a native runtime loop that can start, fail, and stop cleanly,
+- real-device validation.
+
+### First visible GUI sample or menu
+Needs everything above, plus:
+- a true render-owning runtime surface,
+- usable input routing,
+- lifecycle handling that survives foreground/background transitions.
+
+### First playable game
+Needs everything above, plus:
+- audio,
+- stability across repeated launches,
+- memory/thermal evidence on real hardware,
+- enough compatibility work to support a narrow known-good title path.
+
+So the repo is close to a serious launcher prototype, but still materially short of a true Windows-executable runtime.
+
 ## Suggested milestone order inside the MVP
 
 ### Milestone A

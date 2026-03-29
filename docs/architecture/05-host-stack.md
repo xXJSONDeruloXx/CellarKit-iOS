@@ -20,6 +20,7 @@ Responsibilities already implemented:
 - product-lane feature gating,
 - container metadata,
 - imported-content references,
+- inferred executable-entry metadata,
 - runtime profiles,
 - JSON-backed container persistence,
 - default profile generation through `ContainerFactory`.
@@ -84,6 +85,7 @@ Implemented pieces:
 - C bridge API in `Sources/CCellarBridgeStub/`,
 - Swift wrapper in `Sources/CellarRuntimeBridge/NativeRuntimeBridge.swift`,
 - launch-configuration assembly in `Sources/CellarRuntimeBridge/RuntimeLaunchConfiguration.swift`,
+- executable-target path resolution and stub-side bootstrap validation,
 - event translation into `RuntimeBridgeEvent`,
 - tests proving callback-driven happy/failure paths.
 
