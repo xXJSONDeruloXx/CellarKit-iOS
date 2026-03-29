@@ -13,13 +13,13 @@ public struct HostShellRootView: View {
         NavigationSplitView {
             List {
                 capabilitySection
+                actionSection
                 containersSection
             }
             .navigationTitle("CellarKit")
         } detail: {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    actionSection
                     planningSection
                     sessionsSection
                     logSection
@@ -86,34 +86,34 @@ public struct HostShellRootView: View {
     }
 
     private var actionSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Status")
-                .font(.headline)
+        Section("Actions") {
             Text(model.statusMessage)
                 .foregroundStyle(.secondary)
+                .accessibilityIdentifier("statusMessage")
 
-            HStack {
-                Button("Refresh") {
-                    Task {
-                        await model.refresh()
-                    }
+            Button("Refresh") {
+                Task {
+                    await model.refresh()
                 }
-                .disabled(model.isBusy)
-
-                Button("Create Sample") {
-                    Task {
-                        await model.createSampleContainer()
-                    }
-                }
-                .disabled(model.isBusy)
-
-                Button("Launch Selected") {
-                    Task {
-                        await model.launchSelectedContainer()
-                    }
-                }
-                .disabled(model.isBusy || model.selectedContainerID == nil)
             }
+            .accessibilityIdentifier("refreshButton")
+            .disabled(model.isBusy)
+
+            Button("Create Sample") {
+                Task {
+                    await model.createSampleContainer()
+                }
+            }
+            .accessibilityIdentifier("createSampleButton")
+            .disabled(model.isBusy)
+
+            Button("Launch Selected") {
+                Task {
+                    await model.launchSelectedContainer()
+                }
+            }
+            .accessibilityIdentifier("launchSelectedButton")
+            .disabled(model.isBusy || model.selectedContainerID == nil)
         }
     }
 
@@ -187,6 +187,7 @@ public struct HostShellRootView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(10)
                         .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+                        .accessibilityIdentifier("latestLogText")
                 }
             }
         }

@@ -10,6 +10,10 @@ final class HostCoordinatorTests: XCTestCase {
         let coordinator = HostCoordinator(
             containerStore: ContainerStore(rootURL: root.appending(path: "Containers")),
             sessionStore: LaunchSessionStore(rootURL: root.appending(path: "Sessions")),
+            contentImporter: ContentImportCoordinator(
+                managedContentRootURL: root.appending(path: "ManagedContent"),
+                bookmarkStore: BookmarkStore(rootURL: root.appending(path: "Bookmarks"))
+            ),
             bridge: SimulatedRuntimeBridge(
                 startupDelay: .milliseconds(0),
                 lineDelay: .milliseconds(0),
@@ -60,6 +64,50 @@ final class HostCoordinatorTests: XCTestCase {
         XCTAssertNotNil(loadedContainers.first?.lastLaunchedAt)
     }
 
+    func testCoordinatorCreatesManagedCopyContainer() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let sourceURL = root.appending(path: "Game.exe")
+        try Data("payload".utf8).write(to: sourceURL)
+
+        let coordinator = HostCoordinator(
+            containerStore: ContainerStore(rootURL: root.appending(path: "Containers")),
+            sessionStore: LaunchSessionStore(rootURL: root.appending(path: "Sessions")),
+            contentImporter: ContentImportCoordinator(
+                managedContentRootURL: root.appending(path: "ManagedContent"),
+                bookmarkStore: BookmarkStore(rootURL: root.appending(path: "Bookmarks"))
+            ),
+            bridge: SimulatedRuntimeBridge(startupDelay: .milliseconds(0), lineDelay: .milliseconds(0))
+        )
+
+        let request = GameLaunchRequest(
+            title: "Managed Copy Game",
+            storefront: .localImport,
+            acquisitionMode: .localImport,
+            guestArchitecture: .windowsARM64
+        )
+        let capabilities = RuntimeCapabilities(
+            distributionChannel: .developerSigned,
+            jitMode: .none
+        )
+
+        let created = try await coordinator.createManagedCopyContainer(
+            sourceURL: sourceURL,
+            request: request,
+            capabilities: capabilities,
+            productLane: .research,
+            preferredFilename: "Installed.exe"
+        )
+        let loaded = try await coordinator.loadContainer(id: created.descriptor.id)
+
+        XCTAssertEqual(created.descriptor.contentReference?.mode, .managedCopy)
+        XCTAssertTrue(created.descriptor.importPath?.hasSuffix("Installed.exe") == true)
+        XCTAssertEqual(try Data(contentsOf: URL(fileURLWithPath: created.descriptor.importPath!)), Data("payload".utf8))
+        XCTAssertEqual(loaded?.id, created.descriptor.id)
+    }
+
     func testCoordinatorPersistsPlanningFailureAsSession() async throws {
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
@@ -67,6 +115,10 @@ final class HostCoordinatorTests: XCTestCase {
         let coordinator = HostCoordinator(
             containerStore: ContainerStore(rootURL: root.appending(path: "Containers")),
             sessionStore: LaunchSessionStore(rootURL: root.appending(path: "Sessions")),
+            contentImporter: ContentImportCoordinator(
+                managedContentRootURL: root.appending(path: "ManagedContent"),
+                bookmarkStore: BookmarkStore(rootURL: root.appending(path: "Bookmarks"))
+            ),
             bridge: SimulatedRuntimeBridge(startupDelay: .milliseconds(0), lineDelay: .milliseconds(0))
         )
 

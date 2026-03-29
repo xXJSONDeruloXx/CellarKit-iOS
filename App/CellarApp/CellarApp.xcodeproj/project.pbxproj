@@ -1,0 +1,462 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		06CBE975725A1A93D45C75EE /* CellarUI in Frameworks */ = {isa = PBXBuildFile; productRef = A0CB9AE590FA6D7E374E6737 /* CellarUI */; };
+		1E5B1DC7C4740E9BE0374DC7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB39F6D06FFEB609DCF2AA18 /* Assets.xcassets */; };
+		52CAA2E39FEEBC607BD7F283 /* CellarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB2F975FBD6D89D4DB439BC2 /* CellarApp.swift */; };
+		5C93CEDC6D0C1A6EF60C2D91 /* CellarAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22051CA68177F163F98AC2CF /* CellarAppUITests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F75F77F5E47B064BC880C7ED /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 09EAE57E929452BBDA5AC63E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1D9D7B2BC0F050F332964C99;
+			remoteInfo = CellarApp;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		22051CA68177F163F98AC2CF /* CellarAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellarAppUITests.swift; sourceTree = "<group>"; };
+		6515FDFF39FF412F6990F0B4 /* CellarApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = CellarApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6738DA6622C45FDBFC40FE15 /* CellarAppUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CellarAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		9319E04B913AB0203A8B0ACA /* CellarKit-iOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "CellarKit-iOS"; path = ../..; sourceTree = SOURCE_ROOT; };
+		BB39F6D06FFEB609DCF2AA18 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		DB2F975FBD6D89D4DB439BC2 /* CellarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellarApp.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		6F76F85503186A8CD3208A7F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				06CBE975725A1A93D45C75EE /* CellarUI in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		57C364AE3F85420ED5A2A39F /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				9319E04B913AB0203A8B0ACA /* CellarKit-iOS */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		ACD6B39E2A7AB0D6D38301CF = {
+			isa = PBXGroup;
+			children = (
+				B84DE881AF74BCBF6A2E0898 /* CellarApp */,
+				C7A77663D209E1B76B890665 /* CellarAppUITests */,
+				57C364AE3F85420ED5A2A39F /* Packages */,
+				F05970E63E8A42B5F343E301 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B84DE881AF74BCBF6A2E0898 /* CellarApp */ = {
+			isa = PBXGroup;
+			children = (
+				BB39F6D06FFEB609DCF2AA18 /* Assets.xcassets */,
+				DB2F975FBD6D89D4DB439BC2 /* CellarApp.swift */,
+			);
+			path = CellarApp;
+			sourceTree = "<group>";
+		};
+		C7A77663D209E1B76B890665 /* CellarAppUITests */ = {
+			isa = PBXGroup;
+			children = (
+				22051CA68177F163F98AC2CF /* CellarAppUITests.swift */,
+			);
+			path = CellarAppUITests;
+			sourceTree = "<group>";
+		};
+		F05970E63E8A42B5F343E301 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				6515FDFF39FF412F6990F0B4 /* CellarApp.app */,
+				6738DA6622C45FDBFC40FE15 /* CellarAppUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1D9D7B2BC0F050F332964C99 /* CellarApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B4A7212B27CD61B4CCA8DFF0 /* Build configuration list for PBXNativeTarget "CellarApp" */;
+			buildPhases = (
+				23D694818FFBFEAA693C65EA /* Sources */,
+				C51553903D77C11B679C1AEB /* Resources */,
+				6F76F85503186A8CD3208A7F /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CellarApp;
+			packageProductDependencies = (
+				A0CB9AE590FA6D7E374E6737 /* CellarUI */,
+			);
+			productName = CellarApp;
+			productReference = 6515FDFF39FF412F6990F0B4 /* CellarApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+		6BB3AECDD4D697D917A2DC04 /* CellarAppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CD5BB7EDC61D14676CC624A9 /* Build configuration list for PBXNativeTarget "CellarAppUITests" */;
+			buildPhases = (
+				9B3D4371FFF82CC67B30957F /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7309A36B38597E78893AE71E /* PBXTargetDependency */,
+			);
+			name = CellarAppUITests;
+			packageProductDependencies = (
+			);
+			productName = CellarAppUITests;
+			productReference = 6738DA6622C45FDBFC40FE15 /* CellarAppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		09EAE57E929452BBDA5AC63E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					1D9D7B2BC0F050F332964C99 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+					6BB3AECDD4D697D917A2DC04 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+						TestTargetID = 1D9D7B2BC0F050F332964C99;
+					};
+				};
+			};
+			buildConfigurationList = 2EFB3F29C72BA8138F1CED97 /* Build configuration list for PBXProject "CellarApp" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = ACD6B39E2A7AB0D6D38301CF;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				ABC3153CBD065D1DFF3DF31B /* XCLocalSwiftPackageReference "../.." */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = F05970E63E8A42B5F343E301 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1D9D7B2BC0F050F332964C99 /* CellarApp */,
+				6BB3AECDD4D697D917A2DC04 /* CellarAppUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C51553903D77C11B679C1AEB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1E5B1DC7C4740E9BE0374DC7 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		23D694818FFBFEAA693C65EA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				52CAA2E39FEEBC607BD7F283 /* CellarApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9B3D4371FFF82CC67B30957F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5C93CEDC6D0C1A6EF60C2D91 /* CellarAppUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		7309A36B38597E78893AE71E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1D9D7B2BC0F050F332964C99 /* CellarApp */;
+			targetProxy = F75F77F5E47B064BC880C7ED /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		3AA903AC8E5827351DD17951 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = CellarKit;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.cellarkit.ios.app;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		4FD0034C1F9E8849D34BF79B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		5B4A8FCA6C4BA95C7F0DFDD6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		6ABA7825AF9CD3ADD10D57E7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.cellarkit.ios.appUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = CellarApp;
+			};
+			name = Debug;
+		};
+		B31174F20FC0DE1B494D6ACF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = CellarKit;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.cellarkit.ios.app;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		E4E1F7EACBE29B0BE5411612 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.cellarkit.ios.appUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = CellarApp;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2EFB3F29C72BA8138F1CED97 /* Build configuration list for PBXProject "CellarApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4FD0034C1F9E8849D34BF79B /* Debug */,
+				5B4A8FCA6C4BA95C7F0DFDD6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		B4A7212B27CD61B4CCA8DFF0 /* Build configuration list for PBXNativeTarget "CellarApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B31174F20FC0DE1B494D6ACF /* Debug */,
+				3AA903AC8E5827351DD17951 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		CD5BB7EDC61D14676CC624A9 /* Build configuration list for PBXNativeTarget "CellarAppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6ABA7825AF9CD3ADD10D57E7 /* Debug */,
+				E4E1F7EACBE29B0BE5411612 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		ABC3153CBD065D1DFF3DF31B /* XCLocalSwiftPackageReference "../.." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../..;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A0CB9AE590FA6D7E374E6737 /* CellarUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CellarUI;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 09EAE57E929452BBDA5AC63E /* Project object */;
+}

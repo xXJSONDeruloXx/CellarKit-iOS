@@ -3,6 +3,7 @@ import CellarCore
 
 public enum HostCoordinatorError: Error, Equatable, Sendable {
     case containerNotFound(UUID)
+    case importerUnavailable
 }
 
 public struct CreatedContainerResult: Equatable, Sendable {
@@ -18,6 +19,7 @@ public struct CreatedContainerResult: Equatable, Sendable {
 public actor HostCoordinator {
     private let containerStore: ContainerStore
     private let sessionStore: LaunchSessionStore
+    private let contentImporter: ContentImportCoordinator?
     private let planner: ExecutionPlanner
     private let factory: ContainerFactory
     private let bridge: any RuntimeBridging
@@ -25,12 +27,14 @@ public actor HostCoordinator {
     public init(
         containerStore: ContainerStore,
         sessionStore: LaunchSessionStore,
+        contentImporter: ContentImportCoordinator? = nil,
         planner: ExecutionPlanner = ExecutionPlanner(),
         factory: ContainerFactory = ContainerFactory(),
         bridge: any RuntimeBridging = SimulatedRuntimeBridge()
     ) {
         self.containerStore = containerStore
         self.sessionStore = sessionStore
+        self.contentImporter = contentImporter
         self.planner = planner
         self.factory = factory
         self.bridge = bridge
@@ -62,6 +66,45 @@ public actor HostCoordinator {
             contentReference: contentReference,
             titleOverride: titleOverride
         )
+        try containerStore.save(descriptor)
+        return CreatedContainerResult(descriptor: descriptor, planningDecision: decision)
+    }
+
+    public func createManagedCopyContainer(
+        sourceURL: URL,
+        request: GameLaunchRequest,
+        capabilities: RuntimeCapabilities,
+        productLane: ProductLane,
+        preferredFilename: String? = nil,
+        titleOverride: String? = nil
+    ) throws -> CreatedContainerResult {
+        guard let contentImporter else {
+            throw HostCoordinatorError.importerUnavailable
+        }
+
+        let containerID = UUID()
+        let imported = try contentImporter.importManagedCopy(
+            from: sourceURL,
+            containerID: containerID,
+            preferredName: preferredFilename
+        )
+
+        let decision = planner.plan(
+            request: request,
+            capabilities: capabilities,
+            productLane: productLane
+        )
+
+        var descriptor = factory.makeDescriptor(
+            from: request,
+            decision: decision,
+            contentReference: imported.contentReference,
+            titleOverride: titleOverride
+        )
+        descriptor.id = containerID
+        descriptor.importPath = imported.contentReference.pathHint
+        descriptor.contentReference = imported.contentReference
+
         try containerStore.save(descriptor)
         return CreatedContainerResult(descriptor: descriptor, planningDecision: decision)
     }

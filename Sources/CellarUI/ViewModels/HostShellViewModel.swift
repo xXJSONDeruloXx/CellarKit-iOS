@@ -27,6 +27,10 @@ public final class HostShellViewModel: ObservableObject {
         self.coordinator = coordinator ?? HostCoordinator(
             containerStore: ContainerStore(rootURL: paths.containersURL),
             sessionStore: LaunchSessionStore(rootURL: paths.sessionsURL),
+            contentImporter: ContentImportCoordinator(
+                managedContentRootURL: paths.managedContentURL,
+                bookmarkStore: BookmarkStore(rootURL: paths.bookmarksURL)
+            ),
             bridge: SimulatedRuntimeBridge(
                 logLines: [
                     "booting sample runtime",
