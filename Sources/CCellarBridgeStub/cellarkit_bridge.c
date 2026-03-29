@@ -20,15 +20,18 @@ void cellarkit_bridge_run(
     void *context,
     cellarkit_bridge_callback callback
 ) {
-    char line[256];
+    char line[512];
 
     snprintf(
         line,
         sizeof(line),
-        "native stub preparing title=%s backend=%s lane=%s",
+        "native stub preparing title=%s backend=%s lane=%s graphics=%s dist=%s jit=%s",
         config.title != NULL ? config.title : "unknown",
         config.backend != NULL ? config.backend : "unknown",
-        config.product_lane != NULL ? config.product_lane : "unknown"
+        config.product_lane != NULL ? config.product_lane : "unknown",
+        config.graphics_backend != NULL ? config.graphics_backend : "unknown",
+        config.distribution_channel != NULL ? config.distribution_channel : "unknown",
+        config.jit_mode != NULL ? config.jit_mode : "unknown"
     );
     emit(context, callback, CELLARKIT_BRIDGE_EVENT_PREPARING, line, 0);
     usleep(20000);
@@ -39,8 +42,11 @@ void cellarkit_bridge_run(
     snprintf(
         line,
         sizeof(line),
-        "native backend=%s",
-        config.backend != NULL ? config.backend : "unknown"
+        "native backend=%s graphics=%s memory=%d shaderCache=%d",
+        config.backend != NULL ? config.backend : "unknown",
+        config.graphics_backend != NULL ? config.graphics_backend : "unknown",
+        config.memory_budget_mb,
+        config.shader_cache_budget_mb
     );
     emit(context, callback, CELLARKIT_BRIDGE_EVENT_LOG, line, 0);
     usleep(10000);
@@ -48,8 +54,10 @@ void cellarkit_bridge_run(
     snprintf(
         line,
         sizeof(line),
-        "native lane=%s",
-        config.product_lane != NULL ? config.product_lane : "unknown"
+        "native contentMode=%s contentPath=%s bookmark=%s",
+        config.content_mode != NULL ? config.content_mode : "none",
+        config.content_path != NULL ? config.content_path : "none",
+        config.has_bookmark ? "present" : "absent"
     );
     emit(context, callback, CELLARKIT_BRIDGE_EVENT_LOG, line, 0);
     usleep(10000);

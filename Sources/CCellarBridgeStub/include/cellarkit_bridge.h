@@ -22,6 +22,14 @@ typedef struct {
     const char *title;
     const char *backend;
     const char *product_lane;
+    const char *graphics_backend;
+    const char *distribution_channel;
+    const char *jit_mode;
+    const char *content_mode;
+    const char *content_path;
+    int32_t memory_budget_mb;
+    int32_t shader_cache_budget_mb;
+    int32_t has_bookmark;
     int32_t exit_code;
     int32_t emit_failure;
 } cellarkit_bridge_config;

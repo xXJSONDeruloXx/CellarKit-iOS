@@ -18,13 +18,16 @@ public final class HostShellViewModel: ObservableObject {
 
     private let coordinator: HostCoordinator
     private let capabilityDetector: any HostCapabilityDetecting
+    private let environment: [String: String]
 
     public init(
         paths: HostShellPaths = HostShellPaths(rootURL: HostShellPaths.defaultRootURL()),
         capabilityDetector: any HostCapabilityDetecting = HostCapabilityDetector(),
+        environment: [String: String] = ProcessInfo.processInfo.environment,
         coordinator: HostCoordinator? = nil
     ) {
         self.capabilityDetector = capabilityDetector
+        self.environment = environment
         self.capabilitySnapshot = capabilityDetector.detect()
         self.coordinator = coordinator ?? HostCoordinator(
             containerStore: ContainerStore(rootURL: paths.containersURL),
@@ -54,9 +57,14 @@ public final class HostShellViewModel: ObservableObject {
                 self.selectedContainerID = containers.first?.id
             }
             try await reloadSelectionDetails()
-            statusMessage = containers.isEmpty
+            let summaryMessage = containers.isEmpty
                 ? "No containers yet. Create a sample container to exercise the host flow."
                 : "Loaded \(containers.count) container(s)."
+            if statusMessage == "Ready."
+                || statusMessage.hasPrefix("Loaded ")
+                || statusMessage.hasPrefix("No containers") {
+                statusMessage = summaryMessage
+            }
         } catch {
             statusMessage = "Refresh failed: \(error.localizedDescription)"
         }
@@ -100,14 +108,21 @@ public final class HostShellViewModel: ObservableObject {
             )
             selectedContainerID = created.descriptor.id
             planningDecision = created.planningDecision
-            statusMessage = "Created sample container \"\(created.descriptor.title)\"."
             await refresh()
+            statusMessage = "Created sample container \"\(created.descriptor.title)\"."
+            if shouldAutoLaunchAfterCreate {
+                await launchSelectedContainer()
+            }
         } catch {
             statusMessage = "Create failed: \(error.localizedDescription)"
         }
     }
 
-    public func importPayload(from sourceURL: URL, titleOverride: String? = nil) async {
+    public func importPayload(
+        from sourceURL: URL,
+        mode: ImportedContentMode = .managedCopy,
+        titleOverride: String? = nil
+    ) async {
         isBusy = true
         defer { isBusy = false }
 
@@ -126,18 +141,40 @@ public final class HostShellViewModel: ObservableObject {
         )
 
         do {
-            let created = try await coordinator.createManagedCopyContainer(
-                sourceURL: sourceURL,
-                request: request,
-                capabilities: capabilitySnapshot.capabilities,
-                productLane: capabilitySnapshot.productLane,
-                preferredFilename: sourceURL.lastPathComponent,
-                titleOverride: inferredTitle.isEmpty ? nil : inferredTitle
-            )
+            let created: CreatedContainerResult
+            switch mode {
+            case .managedCopy:
+                created = try await coordinator.createManagedCopyContainer(
+                    sourceURL: sourceURL,
+                    request: request,
+                    capabilities: capabilitySnapshot.capabilities,
+                    productLane: capabilitySnapshot.productLane,
+                    preferredFilename: sourceURL.lastPathComponent,
+                    titleOverride: inferredTitle.isEmpty ? nil : inferredTitle
+                )
+            case .externalSecurityScopedReference:
+                created = try await coordinator.createExternalReferenceContainer(
+                    sourceURL: sourceURL,
+                    request: request,
+                    capabilities: capabilitySnapshot.capabilities,
+                    productLane: capabilitySnapshot.productLane,
+                    titleOverride: inferredTitle.isEmpty ? nil : inferredTitle
+                )
+            case .storefrontManagedDownload, .bundledSample:
+                created = try await coordinator.createManagedCopyContainer(
+                    sourceURL: sourceURL,
+                    request: request,
+                    capabilities: capabilitySnapshot.capabilities,
+                    productLane: capabilitySnapshot.productLane,
+                    preferredFilename: sourceURL.lastPathComponent,
+                    titleOverride: inferredTitle.isEmpty ? nil : inferredTitle
+                )
+            }
             selectedContainerID = created.descriptor.id
             planningDecision = created.planningDecision
             await refresh()
-            statusMessage = "Imported payload into container \"\(created.descriptor.title)\"."
+            let action = mode == .externalSecurityScopedReference ? "Linked external payload" : "Imported payload"
+            statusMessage = "\(action) into container \"\(created.descriptor.title)\"."
         } catch {
             statusMessage = "Import failed: \(error.localizedDescription)"
         }
@@ -173,6 +210,13 @@ public final class HostShellViewModel: ObservableObject {
         } catch {
             statusMessage = "Launch failed: \(error.localizedDescription)"
         }
+    }
+
+    private var shouldAutoLaunchAfterCreate: Bool {
+        guard let rawValue = environment["CELLARKIT_AUTOLAUNCH_AFTER_CREATE"] else {
+            return false
+        }
+        return ["1", "true", "yes", "on"].contains(rawValue.trimmingCharacters(in: .whitespacesAndNewlines).lowercased())
     }
 
     private func reloadSelectionDetails() async throws {

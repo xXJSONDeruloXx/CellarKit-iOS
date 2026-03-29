@@ -6,10 +6,16 @@ import CCellarBridgeStub
 public struct NativeRuntimeBridge: RuntimeBridging, Sendable {
     public var exitCode: Int32
     public var emitFailure: Bool
+    public var configurationFactory: RuntimeLaunchConfigurationFactory
 
-    public init(exitCode: Int32 = 0, emitFailure: Bool = false) {
+    public init(
+        exitCode: Int32 = 0,
+        emitFailure: Bool = false,
+        configurationFactory: RuntimeLaunchConfigurationFactory = RuntimeLaunchConfigurationFactory()
+    ) {
         self.exitCode = exitCode
         self.emitFailure = emitFailure
+        self.configurationFactory = configurationFactory
     }
 
     public func launch(
@@ -18,22 +24,49 @@ public struct NativeRuntimeBridge: RuntimeBridging, Sendable {
         capabilities: RuntimeCapabilities,
         productLane: ProductLane
     ) -> AsyncStream<RuntimeBridgeEvent> {
-        AsyncStream { continuation in
+        let configuration = configurationFactory.makeConfiguration(
+            container: container,
+            decision: decision,
+            capabilities: capabilities,
+            productLane: productLane
+        )
+
+        return AsyncStream { continuation in
             let context = NativeBridgeContext(continuation: continuation)
             let opaque = Unmanaged.passRetained(context).toOpaque()
 
             Task.detached {
-                container.title.withCString { titlePointer in
-                    decision.backend.rawValue.withCString { backendPointer in
-                        productLane.rawValue.withCString { lanePointer in
-                            let config = cellarkit_bridge_config(
-                                title: titlePointer,
-                                backend: backendPointer,
-                                product_lane: lanePointer,
-                                exit_code: exitCode,
-                                emit_failure: emitFailure ? 1 : 0
-                            )
-                            cellarkit_bridge_run(config, opaque, nativeBridgeCallback)
+                withOptionalCString(configuration.contentMode?.rawValue) { contentModePointer in
+                    withOptionalCString(configuration.contentPath) { contentPathPointer in
+                        withOptionalCString(configuration.bookmarkIdentifier) { bookmarkPointer in
+                            configuration.title.withCString { titlePointer in
+                                configuration.backend.rawValue.withCString { backendPointer in
+                                    configuration.productLane.rawValue.withCString { lanePointer in
+                                        configuration.graphicsBackend.rawValue.withCString { graphicsPointer in
+                                            configuration.distributionChannel.rawValue.withCString { distributionPointer in
+                                                configuration.jitMode.rawValue.withCString { jitPointer in
+                                                    let config = cellarkit_bridge_config(
+                                                        title: titlePointer,
+                                                        backend: backendPointer,
+                                                        product_lane: lanePointer,
+                                                        graphics_backend: graphicsPointer,
+                                                        distribution_channel: distributionPointer,
+                                                        jit_mode: jitPointer,
+                                                        content_mode: contentModePointer,
+                                                        content_path: contentPathPointer,
+                                                        memory_budget_mb: Int32(configuration.memoryBudgetMB),
+                                                        shader_cache_budget_mb: Int32(configuration.shaderCacheBudgetMB),
+                                                        has_bookmark: bookmarkPointer == nil ? 0 : 1,
+                                                        exit_code: exitCode,
+                                                        emit_failure: emitFailure ? 1 : 0
+                                                    )
+                                                    cellarkit_bridge_run(config, opaque, nativeBridgeCallback)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -41,7 +74,6 @@ public struct NativeRuntimeBridge: RuntimeBridging, Sendable {
                 let retained = Unmanaged<NativeBridgeContext>.fromOpaque(opaque)
                 retained.release()
                 continuation.finish()
-                _ = capabilities
             }
         }
     }
@@ -72,6 +104,16 @@ private final class NativeBridgeContext {
             continuation.yield(.log(message ?? "Unknown native bridge event."))
         }
     }
+}
+
+private func withOptionalCString<Result>(
+    _ string: String?,
+    _ body: (UnsafePointer<CChar>?) -> Result
+) -> Result {
+    guard let string else {
+        return body(nil)
+    }
+    return string.withCString(body)
 }
 
 private let nativeBridgeCallback: @convention(c) (

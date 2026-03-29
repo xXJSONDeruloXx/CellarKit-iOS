@@ -67,6 +67,34 @@ final class HostShellViewModelTests: XCTestCase {
         XCTAssertTrue(model.statusMessage.contains("Imported payload"))
     }
 
+    func testViewModelLinksExternalPayload() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let sourceURL = root.appending(path: "LinkedFolder")
+        try FileManager.default.createDirectory(at: sourceURL, withIntermediateDirectories: true)
+
+        let model = HostShellViewModel(
+            paths: HostShellPaths(rootURL: root),
+            capabilityDetector: HostCapabilityDetector(
+                environment: [
+                    "CELLARKIT_DISTRIBUTION_CHANNEL": "developerSigned",
+                    "CELLARKIT_JIT_MODE": "none"
+                ]
+            ),
+            coordinator: makeCoordinator(root: root)
+        )
+
+        await model.refresh()
+        await model.importPayload(from: sourceURL, mode: .externalSecurityScopedReference)
+
+        XCTAssertEqual(model.containers.count, 1)
+        XCTAssertEqual(model.containers.first?.contentReference?.mode, .externalSecurityScopedReference)
+        XCTAssertNotNil(model.containers.first?.contentReference?.bookmarkIdentifier)
+        XCTAssertTrue(model.statusMessage.contains("Linked external payload"))
+    }
+
     private func makeCoordinator(root: URL) -> HostCoordinator {
         HostCoordinator(
             containerStore: ContainerStore(rootURL: root.appending(path: "Containers")),

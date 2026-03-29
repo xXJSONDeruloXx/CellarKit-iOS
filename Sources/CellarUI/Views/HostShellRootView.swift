@@ -6,6 +6,7 @@ import CellarHost
 public struct HostShellRootView: View {
     @StateObject private var model: HostShellViewModel
     @State private var isImportingPayload = false
+    @State private var selectedImportMode: ImportedContentMode = .managedCopy
 
     public init(model: HostShellViewModel = HostShellViewModel()) {
         _model = StateObject(wrappedValue: model)
@@ -51,7 +52,7 @@ public struct HostShellRootView: View {
                             url.stopAccessingSecurityScopedResource()
                         }
                     }
-                    await model.importPayload(from: url)
+                    await model.importPayload(from: url, mode: selectedImportMode)
                 }
             case .failure:
                 break
@@ -127,6 +128,7 @@ public struct HostShellRootView: View {
                     await model.refresh()
                 }
             }
+            .buttonStyle(.bordered)
             .accessibilityIdentifier("refreshButton")
             .disabled(model.isBusy)
 
@@ -135,13 +137,24 @@ public struct HostShellRootView: View {
                     await model.createSampleContainer()
                 }
             }
+            .buttonStyle(.bordered)
             .accessibilityIdentifier("createSampleButton")
             .disabled(model.isBusy)
 
-            Button("Import Payload…") {
+            Button("Import Copy…") {
+                selectedImportMode = .managedCopy
                 isImportingPayload = true
             }
+            .buttonStyle(.bordered)
             .accessibilityIdentifier("importPayloadButton")
+            .disabled(model.isBusy)
+
+            Button("Link External…") {
+                selectedImportMode = .externalSecurityScopedReference
+                isImportingPayload = true
+            }
+            .buttonStyle(.bordered)
+            .accessibilityIdentifier("linkExternalButton")
             .disabled(model.isBusy)
 
             Button("Launch Selected") {
@@ -149,6 +162,7 @@ public struct HostShellRootView: View {
                     await model.launchSelectedContainer()
                 }
             }
+            .buttonStyle(.borderedProminent)
             .accessibilityIdentifier("launchSelectedButton")
             .disabled(model.isBusy || model.selectedContainerID == nil)
         }

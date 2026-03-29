@@ -113,6 +113,49 @@ final class HostCoordinatorTests: XCTestCase {
         XCTAssertEqual(loaded?.id, created.descriptor.id)
     }
 
+    func testCoordinatorCreatesExternalReferenceContainerAndResolvesURL() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let sourceURL = root.appending(path: "LinkedFolder")
+        try FileManager.default.createDirectory(at: sourceURL, withIntermediateDirectories: true)
+
+        let coordinator = HostCoordinator(
+            containerStore: ContainerStore(rootURL: root.appending(path: "Containers")),
+            sessionStore: LaunchSessionStore(rootURL: root.appending(path: "Sessions")),
+            benchmarkStore: BenchmarkStore(rootURL: root.appending(path: "Benchmarks")),
+            contentImporter: ContentImportCoordinator(
+                managedContentRootURL: root.appending(path: "ManagedContent"),
+                bookmarkStore: BookmarkStore(rootURL: root.appending(path: "Bookmarks"))
+            ),
+            bridge: SimulatedRuntimeBridge(startupDelay: .milliseconds(0), lineDelay: .milliseconds(0))
+        )
+
+        let request = GameLaunchRequest(
+            title: "Linked Game",
+            storefront: .localImport,
+            acquisitionMode: .localImport,
+            guestArchitecture: .windowsARM64
+        )
+        let capabilities = RuntimeCapabilities(
+            distributionChannel: .developerSigned,
+            jitMode: .none
+        )
+
+        let created = try await coordinator.createExternalReferenceContainer(
+            sourceURL: sourceURL,
+            request: request,
+            capabilities: capabilities,
+            productLane: .research
+        )
+        let resolvedURL = try await coordinator.resolvedContentURL(for: created.descriptor.id)
+
+        XCTAssertEqual(created.descriptor.contentReference?.mode, .externalSecurityScopedReference)
+        XCTAssertNotNil(created.descriptor.contentReference?.bookmarkIdentifier)
+        XCTAssertEqual(resolvedURL?.standardizedFileURL.path, sourceURL.standardizedFileURL.path)
+    }
+
     func testCoordinatorPersistsPlanningFailureAsSession() async throws {
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }

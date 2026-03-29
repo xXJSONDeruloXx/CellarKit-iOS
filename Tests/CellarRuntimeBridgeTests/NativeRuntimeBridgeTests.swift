@@ -35,10 +35,15 @@ final class NativeRuntimeBridgeTests: XCTestCase {
         )
 
         XCTAssertEqual(events.count, 6)
-        XCTAssertEqual(events[0], .preparing(message: "native stub preparing title=Native Stub Game backend=wineARM64 lane=research"))
+        XCTAssertEqual(
+            events[0],
+            .preparing(
+                message: "native stub preparing title=Native Stub Game backend=wineARM64 lane=research graphics=dxvkMoltenVK dist=developerSigned jit=none"
+            )
+        )
         XCTAssertEqual(events[1], .started)
-        XCTAssertEqual(events[2], .log("native backend=wineARM64"))
-        XCTAssertEqual(events[3], .log("native lane=research"))
+        XCTAssertEqual(events[2], .log("native backend=wineARM64 graphics=dxvkMoltenVK memory=1536 shaderCache=256"))
+        XCTAssertEqual(events[3], .log("native contentMode=none contentPath=none bookmark=absent"))
         XCTAssertEqual(events[4], .interactive(message: "native stub interactive"))
         XCTAssertEqual(events[5], .exited(exitCode: 0))
     }

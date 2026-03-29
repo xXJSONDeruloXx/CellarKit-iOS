@@ -68,6 +68,25 @@ public struct ContentImportCoordinator {
         )
     }
 
+    public func resolveImportedPayloadURL(for reference: ImportedContentReference?) throws -> URL? {
+        guard let reference else {
+            return nil
+        }
+
+        switch reference.mode {
+        case .managedCopy, .bundledSample, .storefrontManagedDownload:
+            guard let pathHint = reference.pathHint else {
+                return nil
+            }
+            return URL(fileURLWithPath: pathHint)
+        case .externalSecurityScopedReference:
+            guard let bookmarkIdentifier = reference.bookmarkIdentifier else {
+                return nil
+            }
+            return try bookmarkStore.resolve(identifier: bookmarkIdentifier)
+        }
+    }
+
     public func registerBundledSample(
         named _: String,
         pathHint: String,

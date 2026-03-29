@@ -115,6 +115,49 @@ public actor HostCoordinator {
         return CreatedContainerResult(descriptor: descriptor, planningDecision: decision)
     }
 
+    public func createExternalReferenceContainer(
+        sourceURL: URL,
+        request: GameLaunchRequest,
+        capabilities: RuntimeCapabilities,
+        productLane: ProductLane,
+        titleOverride: String? = nil
+    ) throws -> CreatedContainerResult {
+        guard let contentImporter else {
+            throw HostCoordinatorError.importerUnavailable
+        }
+
+        let imported = try contentImporter.registerSecurityScopedReference(for: sourceURL)
+        let decision = planner.plan(
+            request: request,
+            capabilities: capabilities,
+            productLane: productLane
+        )
+
+        var descriptor = factory.makeDescriptor(
+            from: request,
+            decision: decision,
+            contentReference: imported.contentReference,
+            titleOverride: titleOverride
+        )
+        descriptor.importPath = imported.contentReference.pathHint
+        descriptor.contentReference = imported.contentReference
+
+        try containerStore.save(descriptor)
+        return CreatedContainerResult(descriptor: descriptor, planningDecision: decision)
+    }
+
+    public func resolvedContentURL(for containerID: UUID) throws -> URL? {
+        guard let descriptor = try containerStore.load(id: containerID) else {
+            throw HostCoordinatorError.containerNotFound(containerID)
+        }
+
+        guard let contentImporter else {
+            return descriptor.contentReference?.pathHint.map { URL(fileURLWithPath: $0) }
+        }
+
+        return try contentImporter.resolveImportedPayloadURL(for: descriptor.contentReference)
+    }
+
     public func planLaunch(
         for containerID: UUID,
         capabilities: RuntimeCapabilities,
