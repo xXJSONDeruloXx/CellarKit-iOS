@@ -83,6 +83,7 @@ This module now provides a native C-backed bridge stub.
 Implemented pieces:
 - C bridge API in `Sources/CCellarBridgeStub/`,
 - Swift wrapper in `Sources/CellarRuntimeBridge/NativeRuntimeBridge.swift`,
+- launch-configuration assembly in `Sources/CellarRuntimeBridge/RuntimeLaunchConfiguration.swift`,
 - event translation into `RuntimeBridgeEvent`,
 - tests proving callback-driven happy/failure paths.
 
@@ -111,7 +112,7 @@ Implemented pieces:
 
 The following pieces are placeholders and must be replaced later:
 - actual iOS entitlement/runtime detection,
-- hardened security-scoped bookmark resolution,
+- hardened security-scoped bookmark resolution and long-lived access management,
 - real Wine/runtime bootstrap,
 - real render/input lifecycle handling.
 

@@ -70,7 +70,7 @@ Apple-host integration and orchestration scaffolding:
 - actor-based host coordinator.
 
 ### `CellarRuntimeBridge`
-A native C-backed bridge stub that exercises callback plumbing and event translation before a real Wine/runtime integration exists.
+A native C-backed bridge stub that exercises callback plumbing, launch-configuration translation, and event translation before a real Wine/runtime integration exists.
 
 ### `CellarUI`
 SwiftUI host-shell prototype:
@@ -78,6 +78,7 @@ SwiftUI host-shell prototype:
 - container list,
 - sample-container creation,
 - managed-copy import via file importer,
+- external-reference linking via file importer,
 - planner inspection,
 - launch-session history,
 - benchmark summary,
@@ -129,7 +130,7 @@ This now verifies a real iOS Simulator app flow and stores `.xcresult` bundles o
 
 1. Replace the current native stub bridge with a real runtime bridge spike.
 2. Replace heuristic capability detection with real-device classification.
-3. Harden security-scoped bookmark import and persistent payload access.
+3. Harden security-scoped bookmark lifecycle and external-reference access during real launches.
 4. Add richer launch metrics beyond the current derived benchmarks.
 5. Prove one narrow interactive sample path on device.
 6. Expand the iOS app beyond the current host shell and smoke-test flow.

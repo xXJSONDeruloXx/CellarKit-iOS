@@ -66,7 +66,8 @@ Deliverables:
 Current status:
 - container metadata, content references, container persistence, launch-session history, and log persistence are implemented,
 - managed-copy and bookmark-storage abstractions are now implemented,
-- document-picker wiring and true sandbox bookmark workflows are still pending.
+- SwiftUI file-import wiring now exists for managed copies and external references,
+- true long-lived sandbox bookmark workflows are still pending.
 
 Acceptance tests:
 - container survives app relaunch,
@@ -84,7 +85,7 @@ Deliverables:
 - stdout/stderr/event plumbing into Swift.
 
 Current status:
-- a native C-backed bridge stub and end-to-end launch orchestration now exist,
+- a native C-backed bridge stub, launch-configuration assembly, and end-to-end launch orchestration now exist,
 - the real runtime bridge is still the next major runtime milestone.
 
 Acceptance tests:

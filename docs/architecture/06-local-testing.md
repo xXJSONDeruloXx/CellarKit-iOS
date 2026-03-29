@@ -71,5 +71,7 @@ Verified locally:
 The simulator smoke test currently exercises:
 - app launch,
 - sample-container creation,
-- simulated runtime launch,
+- native-stub runtime launch,
 - basic UI flow completion on iOS Simulator.
+
+The UI smoke path currently uses `CELLARKIT_AUTOLAUNCH_AFTER_CREATE=true` so the test can validate create + launch deterministically without relying on a second UI tap.
