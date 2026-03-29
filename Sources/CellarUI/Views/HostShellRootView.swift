@@ -1,9 +1,11 @@
 import SwiftUI
+import UniformTypeIdentifiers
 import CellarCore
 import CellarHost
 
 public struct HostShellRootView: View {
     @StateObject private var model: HostShellViewModel
+    @State private var isImportingPayload = false
 
     public init(model: HostShellViewModel = HostShellViewModel()) {
         _model = StateObject(wrappedValue: model)
@@ -31,6 +33,29 @@ public struct HostShellRootView: View {
         }
         .task {
             await model.refresh()
+        }
+        .fileImporter(
+            isPresented: $isImportingPayload,
+            allowedContentTypes: [.item, .data, .folder],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                guard let url = urls.first else {
+                    return
+                }
+                let accessed = url.startAccessingSecurityScopedResource()
+                Task {
+                    defer {
+                        if accessed {
+                            url.stopAccessingSecurityScopedResource()
+                        }
+                    }
+                    await model.importPayload(from: url)
+                }
+            case .failure:
+                break
+            }
         }
     }
 
@@ -72,6 +97,11 @@ public struct HostShellRootView: View {
                                 Text("\(label(for: container.guestArchitecture)) • \(label(for: container.acquisitionMode))")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
+                                if let contentMode = container.contentReference?.mode {
+                                    Text(label(for: contentMode))
+                                        .font(.caption2)
+                                        .foregroundStyle(.tertiary)
+                                }
                             }
                             Spacer()
                             if model.selectedContainerID == container.id {
@@ -106,6 +136,12 @@ public struct HostShellRootView: View {
                 }
             }
             .accessibilityIdentifier("createSampleButton")
+            .disabled(model.isBusy)
+
+            Button("Import Payload…") {
+                isImportingPayload = true
+            }
+            .accessibilityIdentifier("importPayloadButton")
             .disabled(model.isBusy)
 
             Button("Launch Selected") {

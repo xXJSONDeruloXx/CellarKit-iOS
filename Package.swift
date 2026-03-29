@@ -10,6 +10,7 @@ let package = Package(
     products: [
         .library(name: "CellarCore", targets: ["CellarCore"]),
         .library(name: "CellarHost", targets: ["CellarHost"]),
+        .library(name: "CellarRuntimeBridge", targets: ["CellarRuntimeBridge"]),
         .library(name: "CellarUI", targets: ["CellarUI"]),
         .executable(name: "CellarPreviewApp", targets: ["CellarPreviewApp"])
     ],
@@ -22,8 +23,16 @@ let package = Package(
             dependencies: ["CellarCore"]
         ),
         .target(
+            name: "CCellarBridgeStub",
+            publicHeadersPath: "include"
+        ),
+        .target(
+            name: "CellarRuntimeBridge",
+            dependencies: ["CCellarBridgeStub", "CellarHost", "CellarCore"]
+        ),
+        .target(
             name: "CellarUI",
-            dependencies: ["CellarHost", "CellarCore"]
+            dependencies: ["CellarRuntimeBridge", "CellarHost", "CellarCore"]
         ),
         .executableTarget(
             name: "CellarPreviewApp",
@@ -38,8 +47,12 @@ let package = Package(
             dependencies: ["CellarHost", "CellarCore"]
         ),
         .testTarget(
+            name: "CellarRuntimeBridgeTests",
+            dependencies: ["CellarRuntimeBridge", "CellarHost", "CellarCore"]
+        ),
+        .testTarget(
             name: "CellarUITests",
-            dependencies: ["CellarUI", "CellarHost", "CellarCore"]
+            dependencies: ["CellarUI", "CellarRuntimeBridge", "CellarHost", "CellarCore"]
         )
     ]
 )

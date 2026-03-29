@@ -2,6 +2,7 @@ import Foundation
 import SwiftUI
 import CellarCore
 import CellarHost
+import CellarRuntimeBridge
 
 @MainActor
 public final class HostShellViewModel: ObservableObject {
@@ -33,13 +34,7 @@ public final class HostShellViewModel: ObservableObject {
                 managedContentRootURL: paths.managedContentURL,
                 bookmarkStore: BookmarkStore(rootURL: paths.bookmarksURL)
             ),
-            bridge: SimulatedRuntimeBridge(
-                logLines: [
-                    "booting sample runtime",
-                    "mounting simulated container",
-                    "submitting first frame"
-                ]
-            )
+            bridge: NativeRuntimeBridge()
         )
     }
 
@@ -109,6 +104,42 @@ public final class HostShellViewModel: ObservableObject {
             await refresh()
         } catch {
             statusMessage = "Create failed: \(error.localizedDescription)"
+        }
+    }
+
+    public func importPayload(from sourceURL: URL, titleOverride: String? = nil) async {
+        isBusy = true
+        defer { isBusy = false }
+
+        capabilitySnapshot = capabilityDetector.detect()
+
+        let baseTitle = sourceURL.deletingPathExtension().lastPathComponent
+        let inferredTitle = titleOverride ?? (baseTitle.isEmpty ? sourceURL.lastPathComponent : baseTitle)
+        let guestArchitecture: GuestBinaryArchitecture = capabilitySnapshot.capabilities.canRunDynarec
+            ? .windowsX64
+            : .windowsARM64
+        let request = GameLaunchRequest(
+            title: inferredTitle.isEmpty ? "Imported Payload" : inferredTitle,
+            storefront: .localImport,
+            acquisitionMode: .localImport,
+            guestArchitecture: guestArchitecture
+        )
+
+        do {
+            let created = try await coordinator.createManagedCopyContainer(
+                sourceURL: sourceURL,
+                request: request,
+                capabilities: capabilitySnapshot.capabilities,
+                productLane: capabilitySnapshot.productLane,
+                preferredFilename: sourceURL.lastPathComponent,
+                titleOverride: inferredTitle.isEmpty ? nil : inferredTitle
+            )
+            selectedContainerID = created.descriptor.id
+            planningDecision = created.planningDecision
+            await refresh()
+            statusMessage = "Imported payload into container \"\(created.descriptor.title)\"."
+        } catch {
+            statusMessage = "Import failed: \(error.localizedDescription)"
         }
     }
 
