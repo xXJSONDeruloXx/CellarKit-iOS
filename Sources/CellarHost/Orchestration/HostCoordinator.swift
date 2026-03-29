@@ -19,6 +19,8 @@ public struct CreatedContainerResult: Equatable, Sendable {
 public actor HostCoordinator {
     private let containerStore: ContainerStore
     private let sessionStore: LaunchSessionStore
+    private let benchmarkStore: BenchmarkStore?
+    private let benchmarkFactory: BenchmarkRecordFactory
     private let contentImporter: ContentImportCoordinator?
     private let planner: ExecutionPlanner
     private let factory: ContainerFactory
@@ -27,13 +29,17 @@ public actor HostCoordinator {
     public init(
         containerStore: ContainerStore,
         sessionStore: LaunchSessionStore,
+        benchmarkStore: BenchmarkStore? = nil,
         contentImporter: ContentImportCoordinator? = nil,
         planner: ExecutionPlanner = ExecutionPlanner(),
         factory: ContainerFactory = ContainerFactory(),
+        benchmarkFactory: BenchmarkRecordFactory = BenchmarkRecordFactory(),
         bridge: any RuntimeBridging = SimulatedRuntimeBridge()
     ) {
         self.containerStore = containerStore
         self.sessionStore = sessionStore
+        self.benchmarkStore = benchmarkStore
+        self.benchmarkFactory = benchmarkFactory
         self.contentImporter = contentImporter
         self.planner = planner
         self.factory = factory
@@ -174,7 +180,14 @@ public actor HostCoordinator {
                     message: blockerMessage
                 )
             )
-            return try sessionStore.save(record, log: blockerMessage)
+            let persisted = try sessionStore.save(record, log: blockerMessage)
+            try persistBenchmarkIfConfigured(
+                session: persisted,
+                container: descriptor,
+                capabilities: capabilities,
+                notes: ["Planning failed before runtime bootstrap."]
+            )
+            return persisted
         }
 
         var logLines: [String] = []
@@ -259,6 +272,12 @@ public actor HostCoordinator {
         }
 
         let persisted = try sessionStore.save(record, log: logLines.joined(separator: "\n"))
+        try persistBenchmarkIfConfigured(
+            session: persisted,
+            container: descriptor,
+            capabilities: capabilities,
+            notes: []
+        )
         if persisted.wasSuccessful {
             try containerStore.updateLastLaunchedAt(
                 id: descriptor.id,
@@ -272,7 +291,33 @@ public actor HostCoordinator {
         try sessionStore.loadAll(containerID: containerID)
     }
 
+    public func benchmarks(for containerID: UUID) throws -> [BenchmarkRecord] {
+        guard let benchmarkStore else {
+            return []
+        }
+        return try benchmarkStore.loadAll(containerID: containerID)
+    }
+
     public func log(for session: LaunchSessionRecord) throws -> String {
         try sessionStore.loadLog(for: session)
+    }
+
+    private func persistBenchmarkIfConfigured(
+        session: LaunchSessionRecord,
+        container: ContainerDescriptor,
+        capabilities: RuntimeCapabilities,
+        notes: [String]
+    ) throws {
+        guard let benchmarkStore else {
+            return
+        }
+
+        let benchmark = benchmarkFactory.makeRecord(
+            session: session,
+            container: container,
+            capabilities: capabilities,
+            notes: notes
+        )
+        try benchmarkStore.save(benchmark)
     }
 }

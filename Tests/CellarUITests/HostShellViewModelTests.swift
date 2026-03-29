@@ -12,6 +12,11 @@ final class HostShellViewModelTests: XCTestCase {
         let coordinator = HostCoordinator(
             containerStore: ContainerStore(rootURL: root.appending(path: "Containers")),
             sessionStore: LaunchSessionStore(rootURL: root.appending(path: "Sessions")),
+            benchmarkStore: BenchmarkStore(rootURL: root.appending(path: "Benchmarks")),
+            contentImporter: ContentImportCoordinator(
+                managedContentRootURL: root.appending(path: "ManagedContent"),
+                bookmarkStore: BookmarkStore(rootURL: root.appending(path: "Bookmarks"))
+            ),
             bridge: SimulatedRuntimeBridge(
                 startupDelay: .milliseconds(0),
                 lineDelay: .milliseconds(0),
@@ -43,6 +48,7 @@ final class HostShellViewModelTests: XCTestCase {
 
         await model.launchSelectedContainer()
         XCTAssertEqual(model.sessions.count, 1)
+        XCTAssertEqual(model.benchmarkResults.count, 1)
         XCTAssertEqual(model.latestLog, "ui boot\nui frame")
         XCTAssertTrue(model.statusMessage.contains("Launch finished"))
     }

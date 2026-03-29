@@ -23,6 +23,10 @@ public struct HostShellPaths: Equatable, Sendable {
         rootURL.appending(path: "Bookmarks")
     }
 
+    public var benchmarksURL: URL {
+        rootURL.appending(path: "Benchmarks")
+    }
+
     public static func defaultRootURL(
         fileManager: FileManager = .default,
         environment: [String: String] = ProcessInfo.processInfo.environment

@@ -22,6 +22,7 @@ public struct HostShellRootView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     planningSection
                     sessionsSection
+                    benchmarkSection
                     logSection
                 }
                 .padding()
@@ -173,6 +174,34 @@ public struct HostShellRootView: View {
         }
     }
 
+    private var benchmarkSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Benchmarks")
+                .font(.headline)
+
+            if model.benchmarkResults.isEmpty {
+                Text("No benchmark captures yet.")
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(model.benchmarkResults.prefix(3)) { benchmark in
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("\(label(for: benchmark.backend)) • \(label(for: benchmark.jitMode))")
+                            .font(.subheadline.weight(.semibold))
+                        Text("Recorded \(benchmark.recordedAt.formatted(date: .abbreviated, time: .shortened))")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(metricsSummary(for: benchmark.metrics))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(10)
+                    .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+                }
+            }
+        }
+    }
+
     private var logSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Latest Log")
@@ -191,6 +220,21 @@ public struct HostShellRootView: View {
                 }
             }
         }
+    }
+
+    private func metricsSummary(for metrics: LaunchSessionMetrics) -> String {
+        var parts: [String] = []
+        if let startup = metrics.startupDurationSeconds {
+            parts.append("startup \(startup.formatted(.number.precision(.fractionLength(2))))s")
+        }
+        if let interactive = metrics.timeToInteractiveSeconds {
+            parts.append("interactive \(interactive.formatted(.number.precision(.fractionLength(2))))s")
+        }
+        if let total = metrics.totalDurationSeconds {
+            parts.append("total \(total.formatted(.number.precision(.fractionLength(2))))s")
+        }
+        parts.append("logs \(metrics.logLineCount)")
+        return parts.joined(separator: " • ")
     }
 
     private func label<T>(for value: T) -> String {

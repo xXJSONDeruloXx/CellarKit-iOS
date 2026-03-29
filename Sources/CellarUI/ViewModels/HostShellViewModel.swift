@@ -10,6 +10,7 @@ public final class HostShellViewModel: ObservableObject {
     @Published public private(set) var sessions: [LaunchSessionRecord] = []
     @Published public private(set) var planningDecision: PlanningDecision?
     @Published public private(set) var selectedContainerID: UUID?
+    @Published public private(set) var benchmarkResults: [BenchmarkRecord] = []
     @Published public private(set) var latestLog: String = ""
     @Published public private(set) var statusMessage: String = "Ready."
     @Published public private(set) var isBusy = false
@@ -27,6 +28,7 @@ public final class HostShellViewModel: ObservableObject {
         self.coordinator = coordinator ?? HostCoordinator(
             containerStore: ContainerStore(rootURL: paths.containersURL),
             sessionStore: LaunchSessionStore(rootURL: paths.sessionsURL),
+            benchmarkStore: BenchmarkStore(rootURL: paths.benchmarksURL),
             contentImporter: ContentImportCoordinator(
                 managedContentRootURL: paths.managedContentURL,
                 bookmarkStore: BookmarkStore(rootURL: paths.bookmarksURL)
@@ -130,6 +132,7 @@ public final class HostShellViewModel: ObservableObject {
             latestLog = try await coordinator.log(for: session)
             containers = try await coordinator.listContainers()
             sessions = try await coordinator.sessions(for: selectedContainerID)
+            benchmarkResults = try await coordinator.benchmarks(for: selectedContainerID)
             planningDecision = try await coordinator.planLaunch(
                 for: selectedContainerID,
                 capabilities: capabilitySnapshot.capabilities,
@@ -144,12 +147,14 @@ public final class HostShellViewModel: ObservableObject {
     private func reloadSelectionDetails() async throws {
         guard let selectedContainerID else {
             sessions = []
+            benchmarkResults = []
             planningDecision = nil
             latestLog = ""
             return
         }
 
         sessions = try await coordinator.sessions(for: selectedContainerID)
+        benchmarkResults = try await coordinator.benchmarks(for: selectedContainerID)
         planningDecision = try await coordinator.planLaunch(
             for: selectedContainerID,
             capabilities: capabilitySnapshot.capabilities,

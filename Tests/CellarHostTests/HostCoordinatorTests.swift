@@ -10,6 +10,7 @@ final class HostCoordinatorTests: XCTestCase {
         let coordinator = HostCoordinator(
             containerStore: ContainerStore(rootURL: root.appending(path: "Containers")),
             sessionStore: LaunchSessionStore(rootURL: root.appending(path: "Sessions")),
+            benchmarkStore: BenchmarkStore(rootURL: root.appending(path: "Benchmarks")),
             contentImporter: ContentImportCoordinator(
                 managedContentRootURL: root.appending(path: "ManagedContent"),
                 bookmarkStore: BookmarkStore(rootURL: root.appending(path: "Bookmarks"))
@@ -53,12 +54,15 @@ final class HostCoordinatorTests: XCTestCase {
         )
         let loadedContainers = try await coordinator.listContainers()
         let sessions = try await coordinator.sessions(for: created.descriptor.id)
+        let benchmarks = try await coordinator.benchmarks(for: created.descriptor.id)
         let log = try await coordinator.log(for: session)
 
         XCTAssertEqual(created.planningDecision.backend, .wineX64Translator)
         XCTAssertEqual(session.state, .exitedCleanly)
         XCTAssertTrue(session.wasSuccessful)
         XCTAssertEqual(sessions.count, 1)
+        XCTAssertEqual(benchmarks.count, 1)
+        XCTAssertEqual(benchmarks.first?.metrics.logLineCount, 2)
         XCTAssertEqual(log, "boot\ngraphics ready")
         XCTAssertEqual(loadedContainers.count, 1)
         XCTAssertNotNil(loadedContainers.first?.lastLaunchedAt)
@@ -75,6 +79,7 @@ final class HostCoordinatorTests: XCTestCase {
         let coordinator = HostCoordinator(
             containerStore: ContainerStore(rootURL: root.appending(path: "Containers")),
             sessionStore: LaunchSessionStore(rootURL: root.appending(path: "Sessions")),
+            benchmarkStore: BenchmarkStore(rootURL: root.appending(path: "Benchmarks")),
             contentImporter: ContentImportCoordinator(
                 managedContentRootURL: root.appending(path: "ManagedContent"),
                 bookmarkStore: BookmarkStore(rootURL: root.appending(path: "Bookmarks"))
@@ -115,6 +120,7 @@ final class HostCoordinatorTests: XCTestCase {
         let coordinator = HostCoordinator(
             containerStore: ContainerStore(rootURL: root.appending(path: "Containers")),
             sessionStore: LaunchSessionStore(rootURL: root.appending(path: "Sessions")),
+            benchmarkStore: BenchmarkStore(rootURL: root.appending(path: "Benchmarks")),
             contentImporter: ContentImportCoordinator(
                 managedContentRootURL: root.appending(path: "ManagedContent"),
                 bookmarkStore: BookmarkStore(rootURL: root.appending(path: "Bookmarks"))
@@ -143,10 +149,12 @@ final class HostCoordinatorTests: XCTestCase {
             capabilities: capabilities,
             productLane: .constrainedPublic
         )
+        let benchmarks = try await coordinator.benchmarks(for: created.descriptor.id)
         let log = try await coordinator.log(for: session)
 
         XCTAssertEqual(created.planningDecision.backend, .unsupported)
         XCTAssertEqual(session.state, .planningFailed)
+        XCTAssertEqual(benchmarks.count, 1)
         XCTAssertFalse(log.isEmpty)
     }
 }

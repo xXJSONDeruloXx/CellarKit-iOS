@@ -98,4 +98,23 @@ public struct LaunchSessionRecord: Codable, Equatable, Sendable, Identifiable {
     public var wasSuccessful: Bool {
         becameInteractiveAt != nil || state == .exitedCleanly
     }
+
+    public var metrics: LaunchSessionMetrics {
+        let startupTimestamp = events.first { $0.kind == .started }?.timestamp
+        let logLineCount = events.reduce(into: 0) { count, event in
+            if event.kind == .log {
+                count += 1
+            }
+        }
+
+        return LaunchSessionMetrics(
+            startupDurationSeconds: startupTimestamp.map { $0.timeIntervalSince(startedAt) },
+            timeToInteractiveSeconds: becameInteractiveAt.map { $0.timeIntervalSince(startedAt) },
+            totalDurationSeconds: endedAt.map { $0.timeIntervalSince(startedAt) },
+            logLineCount: logLineCount,
+            eventCount: events.count,
+            becameInteractive: becameInteractiveAt != nil,
+            exitedCleanly: state == .exitedCleanly
+        )
+    }
 }
