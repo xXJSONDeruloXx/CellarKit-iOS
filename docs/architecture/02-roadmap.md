@@ -41,7 +41,9 @@ Deliverables:
 Current status:
 - heuristic capability detection exists in `CellarHost`,
 - a preview SwiftUI shell exists in `CellarUI` / `CellarPreviewApp`,
-- real device classification and the dedicated iOS target are still pending.
+- a first dedicated iOS app target now exists at `App/CellarApp`,
+- simulator UI smoke testing is automated,
+- real device classification is still pending.
 
 Acceptance tests:
 - launches on real device,
@@ -62,7 +64,8 @@ Deliverables:
 
 Current status:
 - container metadata, content references, container persistence, launch-session history, and log persistence are implemented,
-- document-picker and bookmark-backed import workflows are still pending.
+- managed-copy and bookmark-storage abstractions are now implemented,
+- document-picker wiring and true sandbox bookmark workflows are still pending.
 
 Acceptance tests:
 - container survives app relaunch,

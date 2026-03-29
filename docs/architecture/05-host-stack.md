@@ -36,11 +36,14 @@ Responsibilities already implemented:
 - capability detection with environment overrides,
 - launch-session record models,
 - per-container session persistence,
+- bookmark and managed-copy import abstractions,
 - a simulated runtime bridge,
 - actor-based orchestration through `HostCoordinator`.
 
 Important files:
 - `Sources/CellarHost/Environment/HostCapabilityDetector.swift`
+- `Sources/CellarHost/Import/BookmarkStore.swift`
+- `Sources/CellarHost/Import/ContentImportCoordinator.swift`
 - `Sources/CellarHost/Sessions/LaunchSessionModels.swift`
 - `Sources/CellarHost/Sessions/LaunchSessionStore.swift`
 - `Sources/CellarHost/Runtime/RuntimeBridge.swift`
@@ -69,6 +72,16 @@ Purpose:
 - give future agents a real shell to evolve,
 - make the host flow runnable before an iOS app target exists,
 - validate that the orchestration layers are coherent end to end.
+
+## `CellarApp`
+
+This is the first dedicated iOS app target.
+
+Implemented pieces:
+- XcodeGen project spec at `App/CellarApp/project.yml`,
+- SwiftUI app entrypoint at `App/CellarApp/CellarApp/CellarApp.swift`,
+- simulator UI smoke test at `App/CellarApp/CellarAppUITests/CellarAppUITests.swift`,
+- automation scripts in `scripts/dev/`.
 
 ## Current end-to-end flow
 
@@ -105,7 +118,7 @@ Even with a simulated bridge, the stack already exercises the product decisions 
 Replace `SimulatedRuntimeBridge` with a bridge that only fakes logs but uses the real startup/shutdown threading model.
 
 ### Step 2
-Add a true iOS app target that embeds `CellarUI` and swaps the current paths for app-sandbox paths.
+Replace the current smoke-test-oriented iOS app target with a fuller app shell that owns import flows, settings, and app-sandbox-aware storage.
 
 ### Step 3
 Replace `HostCapabilityDetector` heuristics with device/sandbox-aware detection.

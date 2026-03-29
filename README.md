@@ -9,7 +9,8 @@ Current state of the repo:
 - architecture docs are in place,
 - `CellarCore` planning/persistence exists,
 - `CellarHost` launch orchestration exists,
-- `CellarUI` and `CellarPreviewApp` provide a runnable SwiftUI host-shell prototype on Apple platforms.
+- `CellarUI` and `CellarPreviewApp` provide a runnable SwiftUI host-shell prototype on Apple platforms,
+- `App/CellarApp` provides the first dedicated iOS app target and simulator UI smoke test path.
 
 ## Repository layout
 
@@ -29,16 +30,19 @@ Current state of the repo:
 - `docs/architecture/03-xcode-target-plan.md`
 - `docs/architecture/04-first-mvp-spec.md`
 - `docs/architecture/05-host-stack.md`
+- `docs/architecture/06-local-testing.md`
 
 ### Agent guidance
 - `docs/agents/01-autonomous-build-plan.md`
 - `docs/agents/02-next-implementation-queue.md`
 
-### Swift modules
+### Swift modules and app targets
 - `Sources/CellarCore/`
 - `Sources/CellarHost/`
 - `Sources/CellarUI/`
 - `Sources/CellarPreviewApp/`
+- `App/CellarApp/`
+- `scripts/dev/`
 
 ## Implemented modules
 
@@ -60,6 +64,7 @@ Apple-host integration and orchestration scaffolding:
 - capability detection overrides and heuristics,
 - launch-session models,
 - per-session JSON + log persistence,
+- managed-copy / bookmark import abstractions,
 - simulated runtime bridge,
 - actor-based host coordinator.
 
@@ -74,6 +79,9 @@ SwiftUI host-shell prototype:
 
 ### `CellarPreviewApp`
 A lightweight preview shell that exercises the host stack with a simulated runtime.
+
+### `CellarApp`
+A generated Xcode/iOS app target plus UI smoke test harness for simulator validation.
 
 ## First-pass conclusions still holding
 
@@ -97,11 +105,23 @@ Launch the preview host shell on macOS:
 swift run CellarPreviewApp
 ```
 
+Generate the iOS Xcode project:
+
+```bash
+./scripts/dev/generate-ios-project.sh
+```
+
+Run the simulator smoke test:
+
+```bash
+./scripts/dev/test-ios-simulator.sh
+```
+
 ## Most important next implementation steps
 
 1. Replace the simulated runtime bridge with a native bridge spike.
-2. Add a real iOS app target that embeds `CellarUI`/`CellarHost`.
-3. Replace heuristic capability detection with real-device classification.
-4. Implement security-scoped bookmark import and persistent payload access.
-5. Add durable launch metrics and experiment-result capture.
-6. Prove one narrow interactive sample path on device.
+2. Replace heuristic capability detection with real-device classification.
+3. Implement security-scoped bookmark import and persistent payload access.
+4. Add durable launch metrics and experiment-result capture.
+5. Prove one narrow interactive sample path on device.
+6. Expand the iOS app beyond the current smoke-test host shell.
