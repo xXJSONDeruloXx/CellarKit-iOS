@@ -15,6 +15,7 @@ Ship the project in layers that reduce uncertainty in the right order:
 
 Status:
 - in progress via this repository.
+- research, planning, persistence, and a preview host shell are now implemented.
 
 Deliverables:
 - source-backed docs,
@@ -28,7 +29,7 @@ Exit criteria:
 ## Phase 1 — capability probe app shell
 
 Goal:
-- build a tiny iOS host that reports runtime constraints.
+- build a tiny host that reports runtime constraints, first as a preview shell and then as a dedicated iOS app.
 
 Deliverables:
 - device info screen,
@@ -36,6 +37,11 @@ Deliverables:
 - debugger/JIT state reporting,
 - memory-limit reporting,
 - file-import smoke tests.
+
+Current status:
+- heuristic capability detection exists in `CellarHost`,
+- a preview SwiftUI shell exists in `CellarUI` / `CellarPreviewApp`,
+- real device classification and the dedicated iOS target are still pending.
 
 Acceptance tests:
 - launches on real device,
@@ -54,6 +60,10 @@ Deliverables:
 - choose managed copy vs bookmark mode,
 - per-container logs and settings.
 
+Current status:
+- container metadata, content references, container persistence, launch-session history, and log persistence are implemented,
+- document-picker and bookmark-backed import workflows are still pending.
+
 Acceptance tests:
 - container survives app relaunch,
 - imported payload can be found again,
@@ -68,6 +78,10 @@ Deliverables:
 - runtime bridge scaffold,
 - one minimal backend hooked into the app,
 - stdout/stderr/event plumbing into Swift.
+
+Current status:
+- a simulated runtime bridge and end-to-end launch orchestration now exist,
+- the real native bridge is still the next major runtime milestone.
 
 Acceptance tests:
 - start and stop runtime without app crash,

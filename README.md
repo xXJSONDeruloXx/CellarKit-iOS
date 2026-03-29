@@ -1,73 +1,107 @@
 # CellarKit iOS
 
-Working title for research and scaffolding around a Wine/CrossOver/Whisky-style Windows game runtime for iPhone and iPad.
+Research and implementation scaffolding for a Wine/CrossOver/Whisky-style Windows game runtime host for iPhone and iPad.
 
-Status:
-- source-backed research completed for the first pass,
-- architecture docs scaffolded,
-- Swift planning core + tests added.
+## Status
 
-## What this repo currently contains
+Current state of the repo:
+- first-pass research is complete,
+- architecture docs are in place,
+- `CellarCore` planning/persistence exists,
+- `CellarHost` launch orchestration exists,
+- `CellarUI` and `CellarPreviewApp` provide a runnable SwiftUI host-shell prototype on Apple platforms.
+
+## Repository layout
 
 ### Research
-
 - `docs/research/01-executive-summary.md`
 - `docs/research/02-prior-art.md`
 - `docs/research/03-platform-constraints.md`
 - `docs/research/04-licensing-and-policy.md`
 - `docs/research/05-source-index.md`
 - `docs/research/06-open-questions.md`
+- `docs/research/07-component-matrix.md`
+- `docs/research/08-benchmark-and-test-plan.md`
 
 ### Architecture
-
 - `docs/architecture/01-proposed-architecture.md`
 - `docs/architecture/02-roadmap.md`
+- `docs/architecture/03-xcode-target-plan.md`
+- `docs/architecture/04-first-mvp-spec.md`
+- `docs/architecture/05-host-stack.md`
 
 ### Agent guidance
-
 - `docs/agents/01-autonomous-build-plan.md`
+- `docs/agents/02-next-implementation-queue.md`
 
-### Swift planning core
-
-- `Package.swift`
+### Swift modules
 - `Sources/CellarCore/`
-- `Tests/CellarCoreTests/`
+- `Sources/CellarHost/`
+- `Sources/CellarUI/`
+- `Sources/CellarPreviewApp/`
 
-## First-pass conclusions
+## Implemented modules
 
-- A straight macOS wrapper port is not realistic.
-- A side-load / developer-signed / jailbreak-first MVP is the most credible path.
-- UTM is the strongest iOS-native runtime reference.
-- GameNative is the strongest mobile UX reference.
-- App Store distribution for a full Windows-game storefront runner is a separate, high-risk question.
-
-## Planning core purpose
-
-The current Swift package is intentionally small. It models:
+### `CellarCore`
+Pure domain and planning logic:
 - distribution channels,
 - product lanes,
 - JIT/execution modes,
 - guest architectures,
 - acquisition modes,
-- backend selection,
-- policy risk classification,
+- backend planning,
+- policy risk grading,
 - container metadata,
-- JSON-backed container persistence.
+- container persistence,
+- runtime-profile defaults.
 
-This is here to support future agents and future iOS UI work with deterministic tests before the runtime bridge exists.
+### `CellarHost`
+Apple-host integration and orchestration scaffolding:
+- capability detection overrides and heuristics,
+- launch-session models,
+- per-session JSON + log persistence,
+- simulated runtime bridge,
+- actor-based host coordinator.
 
-## Validation
+### `CellarUI`
+SwiftUI host-shell prototype:
+- capability summary,
+- container list,
+- sample-container creation,
+- planner inspection,
+- launch-session history,
+- latest-log viewer.
 
-Current package tests pass with:
+### `CellarPreviewApp`
+A lightweight preview shell that exercises the host stack with a simulated runtime.
+
+## First-pass conclusions still holding
+
+- A straight macOS wrapper port is not realistic.
+- A side-load / developer-signed / jailbreak-first MVP is the most credible path.
+- UTM remains the strongest iOS-native runtime reference.
+- GameNative remains the strongest mobile UX reference.
+- App Store distribution for a full Windows-game storefront runner remains a separate, high-risk question.
+
+## Local validation
+
+Run the full test suite:
 
 ```bash
 swift test
 ```
 
-## Near-term next steps
+Launch the preview host shell on macOS:
 
-1. Add a minimal iOS host app target.
-2. Implement capability detection on real devices.
-3. Add container/import persistence.
-4. Build the first embedded runtime spike.
-5. Prove one launchable sample path.
+```bash
+swift run CellarPreviewApp
+```
+
+## Most important next implementation steps
+
+1. Replace the simulated runtime bridge with a native bridge spike.
+2. Add a real iOS app target that embeds `CellarUI`/`CellarHost`.
+3. Replace heuristic capability detection with real-device classification.
+4. Implement security-scoped bookmark import and persistent payload access.
+5. Add durable launch metrics and experiment-result capture.
+6. Prove one narrow interactive sample path on device.
