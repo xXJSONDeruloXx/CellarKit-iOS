@@ -40,6 +40,7 @@ public struct ContainerDescriptor: Codable, Equatable, Sendable, Identifiable {
     public var guestArchitecture: GuestBinaryArchitecture
     public var importPath: String?
     public var contentReference: ImportedContentReference?
+    public var entryExecutableRelativePath: String?
     public var runtimeProfile: RuntimeProfile
     public var lastLaunchedAt: Date?
 
@@ -51,6 +52,7 @@ public struct ContainerDescriptor: Codable, Equatable, Sendable, Identifiable {
         guestArchitecture: GuestBinaryArchitecture,
         importPath: String? = nil,
         contentReference: ImportedContentReference? = nil,
+        entryExecutableRelativePath: String? = nil,
         runtimeProfile: RuntimeProfile,
         lastLaunchedAt: Date? = nil
     ) {
@@ -61,6 +63,7 @@ public struct ContainerDescriptor: Codable, Equatable, Sendable, Identifiable {
         self.guestArchitecture = guestArchitecture
         self.importPath = importPath
         self.contentReference = contentReference
+        self.entryExecutableRelativePath = entryExecutableRelativePath
         self.runtimeProfile = runtimeProfile
         self.lastLaunchedAt = lastLaunchedAt
     }

@@ -4,10 +4,16 @@ import CellarCore
 public struct ImportedPayload: Equatable, Sendable {
     public var contentReference: ImportedContentReference
     public var storedURL: URL?
+    public var entryExecutableRelativePath: String?
 
-    public init(contentReference: ImportedContentReference, storedURL: URL? = nil) {
+    public init(
+        contentReference: ImportedContentReference,
+        storedURL: URL? = nil,
+        entryExecutableRelativePath: String? = nil
+    ) {
         self.contentReference = contentReference
         self.storedURL = storedURL
+        self.entryExecutableRelativePath = entryExecutableRelativePath
     }
 }
 
@@ -51,7 +57,8 @@ public struct ContentImportCoordinator {
                 pathHint: destinationURL.path,
                 originalFilename: sourceURL.lastPathComponent
             ),
-            storedURL: destinationURL
+            storedURL: destinationURL,
+            entryExecutableRelativePath: inferEntryExecutableRelativePath(from: destinationURL)
         )
     }
 
@@ -64,7 +71,8 @@ public struct ContentImportCoordinator {
                 bookmarkIdentifier: bookmark.identifier,
                 originalFilename: url.lastPathComponent
             ),
-            storedURL: url
+            storedURL: url,
+            entryExecutableRelativePath: inferEntryExecutableRelativePath(from: url)
         )
     }
 
@@ -116,7 +124,8 @@ public struct ContentImportCoordinator {
     public func registerBundledSample(
         named _: String,
         pathHint: String,
-        originalFilename: String
+        originalFilename: String,
+        entryExecutableRelativePath: String? = nil
     ) -> ImportedPayload {
         ImportedPayload(
             contentReference: ImportedContentReference(
@@ -124,7 +133,36 @@ public struct ContentImportCoordinator {
                 pathHint: pathHint,
                 originalFilename: originalFilename
             ),
-            storedURL: nil
+            storedURL: nil,
+            entryExecutableRelativePath: entryExecutableRelativePath ?? originalFilename
         )
+    }
+
+    private func inferEntryExecutableRelativePath(from sourceURL: URL) -> String? {
+        let lowercasePath = sourceURL.path.lowercased()
+        if lowercasePath.hasSuffix(".exe") {
+            return sourceURL.lastPathComponent
+        }
+
+        guard let enumerator = fileManager.enumerator(
+            at: sourceURL,
+            includingPropertiesForKeys: [.isRegularFileKey],
+            options: [.skipsHiddenFiles]
+        ) else {
+            return nil
+        }
+
+        var matches: [String] = []
+        while let candidate = enumerator.nextObject() as? URL {
+            guard candidate.path.lowercased().hasSuffix(".exe") else {
+                continue
+            }
+
+            let prefix = sourceURL.path.hasSuffix("/") ? sourceURL.path : sourceURL.path + "/"
+            let relativePath = candidate.path.replacingOccurrences(of: prefix, with: "")
+            matches.append(relativePath)
+        }
+
+        return matches.sorted().first
     }
 }

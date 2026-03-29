@@ -132,7 +132,8 @@ public final class HostShellViewModel: ObservableObject {
                 request: request,
                 capabilities: capabilitySnapshot.capabilities,
                 productLane: capabilitySnapshot.productLane,
-                contentReference: contentReference
+                contentReference: contentReference,
+                entryExecutableRelativePath: contentReference.originalFilename
             )
             selectedContainerID = created.descriptor.id
             planningDecision = created.planningDecision

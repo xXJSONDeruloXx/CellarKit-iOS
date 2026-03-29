@@ -10,6 +10,8 @@ public struct RuntimeLaunchConfiguration: Equatable, Sendable {
     public var jitMode: JITMode
     public var contentMode: ImportedContentMode?
     public var contentPath: String?
+    public var entryExecutableRelativePath: String?
+    public var resolvedExecutablePath: String?
     public var bookmarkIdentifier: String?
     public var memoryBudgetMB: Int
     public var shaderCacheBudgetMB: Int
@@ -23,6 +25,8 @@ public struct RuntimeLaunchConfiguration: Equatable, Sendable {
         jitMode: JITMode,
         contentMode: ImportedContentMode?,
         contentPath: String?,
+        entryExecutableRelativePath: String? = nil,
+        resolvedExecutablePath: String? = nil,
         bookmarkIdentifier: String?,
         memoryBudgetMB: Int,
         shaderCacheBudgetMB: Int
@@ -35,6 +39,8 @@ public struct RuntimeLaunchConfiguration: Equatable, Sendable {
         self.jitMode = jitMode
         self.contentMode = contentMode
         self.contentPath = contentPath
+        self.entryExecutableRelativePath = entryExecutableRelativePath
+        self.resolvedExecutablePath = resolvedExecutablePath
         self.bookmarkIdentifier = bookmarkIdentifier
         self.memoryBudgetMB = memoryBudgetMB
         self.shaderCacheBudgetMB = shaderCacheBudgetMB
@@ -50,7 +56,10 @@ public struct RuntimeLaunchConfigurationFactory: Sendable {
         capabilities: RuntimeCapabilities,
         productLane: ProductLane
     ) -> RuntimeLaunchConfiguration {
-        RuntimeLaunchConfiguration(
+        let contentPath = container.contentReference?.pathHint ?? container.importPath
+        let entryExecutableRelativePath = container.entryExecutableRelativePath
+
+        return RuntimeLaunchConfiguration(
             title: container.title,
             backend: decision.backend,
             productLane: productLane,
@@ -58,10 +67,35 @@ public struct RuntimeLaunchConfigurationFactory: Sendable {
             distributionChannel: capabilities.distributionChannel,
             jitMode: capabilities.jitMode,
             contentMode: container.contentReference?.mode,
-            contentPath: container.contentReference?.pathHint ?? container.importPath,
+            contentPath: contentPath,
+            entryExecutableRelativePath: entryExecutableRelativePath,
+            resolvedExecutablePath: resolveExecutablePath(
+                contentPath: contentPath,
+                entryExecutableRelativePath: entryExecutableRelativePath
+            ),
             bookmarkIdentifier: container.contentReference?.bookmarkIdentifier,
             memoryBudgetMB: container.runtimeProfile.memoryBudgetMB,
             shaderCacheBudgetMB: container.runtimeProfile.shaderCacheBudgetMB
         )
+    }
+
+    private func resolveExecutablePath(
+        contentPath: String?,
+        entryExecutableRelativePath: String?
+    ) -> String? {
+        guard let contentPath else {
+            return nil
+        }
+
+        let contentURL = URL(fileURLWithPath: contentPath)
+        if let isDirectory = try? contentURL.resourceValues(forKeys: [.isDirectoryKey]).isDirectory,
+           isDirectory == true {
+            guard let entryExecutableRelativePath, !entryExecutableRelativePath.isEmpty else {
+                return nil
+            }
+            return contentURL.appending(path: entryExecutableRelativePath).path
+        }
+
+        return contentPath
     }
 }

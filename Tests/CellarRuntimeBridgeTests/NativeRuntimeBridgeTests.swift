@@ -41,9 +41,9 @@ final class NativeRuntimeBridgeTests: XCTestCase {
                 message: "native stub preparing title=Native Stub Game backend=wineARM64 lane=research graphics=dxvkMoltenVK dist=developerSigned jit=none"
             )
         )
-        XCTAssertEqual(events[1], .started)
-        XCTAssertEqual(events[2], .log("native backend=wineARM64 graphics=dxvkMoltenVK memory=1536 shaderCache=256"))
-        XCTAssertEqual(events[3], .log("native contentMode=none contentPath=none bookmark=absent"))
+        XCTAssertEqual(events[1], .log("native backend=wineARM64 graphics=dxvkMoltenVK memory=1536 shaderCache=256"))
+        XCTAssertEqual(events[2], .log("native contentMode=none contentPath=none entry=none resolved=none bookmark=absent"))
+        XCTAssertEqual(events[3], .started)
         XCTAssertEqual(events[4], .interactive(message: "native stub interactive"))
         XCTAssertEqual(events[5], .exited(exitCode: 0))
     }
@@ -79,6 +79,45 @@ final class NativeRuntimeBridgeTests: XCTestCase {
         )
 
         XCTAssertEqual(events.last, .failed(message: "native stub failure"))
+    }
+
+    func testNativeRuntimeBridgeFailsWhenManagedPayloadExecutableCannotBeResolved() async {
+        let bridge = NativeRuntimeBridge(exitCode: 0, emitFailure: false)
+        let container = ContainerDescriptor(
+            title: "Broken Payload",
+            storefront: .localImport,
+            acquisitionMode: .localImport,
+            guestArchitecture: .windowsARM64,
+            importPath: "/tmp/CellarKit/MissingPayload",
+            contentReference: ImportedContentReference(
+                mode: .managedCopy,
+                pathHint: "/tmp/CellarKit/MissingPayload",
+                originalFilename: "MissingPayload"
+            ),
+            runtimeProfile: RuntimeProfile(
+                backendPreference: .wineARM64,
+                graphicsBackend: .diagnosticOnly
+            )
+        )
+        let decision = PlanningDecision(
+            backend: .wineARM64,
+            policyRisk: .low
+        )
+        let capabilities = RuntimeCapabilities(
+            distributionChannel: .developerSigned,
+            jitMode: .none
+        )
+
+        let events = await collect(
+            bridge.launch(
+                container: container,
+                decision: decision,
+                capabilities: capabilities,
+                productLane: .research
+            )
+        )
+
+        XCTAssertEqual(events.last, .failed(message: "native bootstrap could not find launch executable at /tmp/CellarKit/MissingPayload"))
     }
 
     private func collect(_ stream: AsyncStream<RuntimeBridgeEvent>) async -> [RuntimeBridgeEvent] {

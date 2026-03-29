@@ -15,6 +15,7 @@ final class ContainerModelsTests: XCTestCase {
                 pathHint: "Containers/Sample Game/GamePayload",
                 originalFilename: "Sample Game.exe"
             ),
+            entryExecutableRelativePath: "Sample Game.exe",
             runtimeProfile: RuntimeProfile(
                 backendPreference: .wineARM64,
                 graphicsBackend: .dxvkMoltenVK,

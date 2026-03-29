@@ -3,20 +3,31 @@ import XCTest
 @testable import CellarCore
 
 final class RuntimeLaunchConfigurationFactoryTests: XCTestCase {
-    func testFactoryBuildsConfigurationFromContainerDecisionAndCapabilities() {
+    func testFactoryBuildsConfigurationFromContainerDecisionAndCapabilities() throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let payloadRoot = root.appending(path: "ConfiguredGame")
+        try FileManager.default.createDirectory(at: payloadRoot, withIntermediateDirectories: true)
+        let executableURL = payloadRoot.appending(path: "Bin/Game.exe")
+        try FileManager.default.createDirectory(at: executableURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data("demo".utf8).write(to: executableURL)
+
         let factory = RuntimeLaunchConfigurationFactory()
         let container = ContainerDescriptor(
             title: "Configured Game",
             storefront: .localImport,
             acquisitionMode: .localImport,
             guestArchitecture: .windowsX64,
-            importPath: "/tmp/ConfiguredGame/Game.exe",
+            importPath: payloadRoot.path,
             contentReference: ImportedContentReference(
                 mode: .externalSecurityScopedReference,
-                pathHint: "/tmp/ConfiguredGame",
+                pathHint: payloadRoot.path,
                 bookmarkIdentifier: "bookmark-123",
-                originalFilename: "Game.exe"
+                originalFilename: "ConfiguredGame"
             ),
+            entryExecutableRelativePath: "Bin/Game.exe",
             runtimeProfile: RuntimeProfile(
                 backendPreference: .wineX64Translator,
                 graphicsBackend: .dxvkMoltenVK,
@@ -47,7 +58,9 @@ final class RuntimeLaunchConfigurationFactoryTests: XCTestCase {
         XCTAssertEqual(configuration.distributionChannel, .developerSigned)
         XCTAssertEqual(configuration.jitMode, .debuggerAttached)
         XCTAssertEqual(configuration.contentMode, .externalSecurityScopedReference)
-        XCTAssertEqual(configuration.contentPath, "/tmp/ConfiguredGame")
+        XCTAssertEqual(configuration.contentPath, payloadRoot.path)
+        XCTAssertEqual(configuration.entryExecutableRelativePath, "Bin/Game.exe")
+        XCTAssertEqual(configuration.resolvedExecutablePath, executableURL.path)
         XCTAssertEqual(configuration.bookmarkIdentifier, "bookmark-123")
         XCTAssertEqual(configuration.memoryBudgetMB, 2048)
         XCTAssertEqual(configuration.shaderCacheBudgetMB, 256)

@@ -29,6 +29,7 @@ final class HostShellViewModelTests: XCTestCase {
 
         await model.createSampleContainer(title: "UI Probe")
         XCTAssertEqual(model.containers.count, 1)
+        XCTAssertEqual(model.selectedContainer?.entryExecutableRelativePath, "SampleX64.exe")
         XCTAssertNotNil(model.planningDecision)
         XCTAssertNotNil(model.selectedContainerID)
 
@@ -67,6 +68,7 @@ final class HostShellViewModelTests: XCTestCase {
 
         XCTAssertEqual(model.containers.count, 1)
         XCTAssertEqual(model.containers.first?.contentReference?.mode, .managedCopy)
+        XCTAssertEqual(model.containers.first?.entryExecutableRelativePath, "ImportedGame.exe")
         XCTAssertTrue(model.containers.first?.importPath?.hasSuffix("ImportedGame.exe") == true)
         XCTAssertTrue(model.statusMessage.contains("Imported payload"))
     }

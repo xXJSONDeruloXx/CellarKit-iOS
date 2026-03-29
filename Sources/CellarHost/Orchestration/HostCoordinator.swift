@@ -59,6 +59,7 @@ public actor HostCoordinator {
         capabilities: RuntimeCapabilities,
         productLane: ProductLane,
         contentReference: ImportedContentReference? = nil,
+        entryExecutableRelativePath: String? = nil,
         titleOverride: String? = nil
     ) throws -> CreatedContainerResult {
         let decision = planner.plan(
@@ -70,6 +71,7 @@ public actor HostCoordinator {
             from: request,
             decision: decision,
             contentReference: contentReference,
+            entryExecutableRelativePath: entryExecutableRelativePath,
             titleOverride: titleOverride
         )
         try containerStore.save(descriptor)
@@ -105,11 +107,13 @@ public actor HostCoordinator {
             from: request,
             decision: decision,
             contentReference: imported.contentReference,
+            entryExecutableRelativePath: imported.entryExecutableRelativePath,
             titleOverride: titleOverride
         )
         descriptor.id = containerID
         descriptor.importPath = imported.contentReference.pathHint
         descriptor.contentReference = imported.contentReference
+        descriptor.entryExecutableRelativePath = imported.entryExecutableRelativePath
 
         try containerStore.save(descriptor)
         return CreatedContainerResult(descriptor: descriptor, planningDecision: decision)
@@ -137,10 +141,12 @@ public actor HostCoordinator {
             from: request,
             decision: decision,
             contentReference: imported.contentReference,
+            entryExecutableRelativePath: imported.entryExecutableRelativePath,
             titleOverride: titleOverride
         )
         descriptor.importPath = imported.contentReference.pathHint
         descriptor.contentReference = imported.contentReference
+        descriptor.entryExecutableRelativePath = imported.entryExecutableRelativePath
 
         try containerStore.save(descriptor)
         return CreatedContainerResult(descriptor: descriptor, planningDecision: decision)

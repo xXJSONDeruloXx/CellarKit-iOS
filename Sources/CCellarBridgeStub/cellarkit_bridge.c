@@ -3,6 +3,10 @@
 #include <string.h>
 #include <unistd.h>
 
+static int is_bundled_sample(const char *content_mode) {
+    return content_mode != NULL && strcmp(content_mode, "bundledSample") == 0;
+}
+
 static void emit(
     void *context,
     cellarkit_bridge_callback callback,
@@ -36,9 +40,6 @@ void cellarkit_bridge_run(
     emit(context, callback, CELLARKIT_BRIDGE_EVENT_PREPARING, line, 0);
     usleep(20000);
 
-    emit(context, callback, CELLARKIT_BRIDGE_EVENT_STARTED, "native stub started", 0);
-    usleep(10000);
-
     snprintf(
         line,
         sizeof(line),
@@ -54,12 +55,41 @@ void cellarkit_bridge_run(
     snprintf(
         line,
         sizeof(line),
-        "native contentMode=%s contentPath=%s bookmark=%s",
+        "native contentMode=%s contentPath=%s entry=%s resolved=%s bookmark=%s",
         config.content_mode != NULL ? config.content_mode : "none",
         config.content_path != NULL ? config.content_path : "none",
+        config.entry_executable_relative_path != NULL ? config.entry_executable_relative_path : "none",
+        config.resolved_executable_path != NULL ? config.resolved_executable_path : "none",
         config.has_bookmark ? "present" : "absent"
     );
     emit(context, callback, CELLARKIT_BRIDGE_EVENT_LOG, line, 0);
+    usleep(10000);
+
+    if (config.content_mode != NULL && !is_bundled_sample(config.content_mode)) {
+        if (config.resolved_executable_path == NULL || config.resolved_executable_path[0] == '\0') {
+            emit(
+                context,
+                callback,
+                CELLARKIT_BRIDGE_EVENT_FAILED,
+                "native bootstrap could not resolve a launch executable",
+                0
+            );
+            return;
+        }
+
+        if (access(config.resolved_executable_path, F_OK) != 0) {
+            snprintf(
+                line,
+                sizeof(line),
+                "native bootstrap could not find launch executable at %s",
+                config.resolved_executable_path
+            );
+            emit(context, callback, CELLARKIT_BRIDGE_EVENT_FAILED, line, 0);
+            return;
+        }
+    }
+
+    emit(context, callback, CELLARKIT_BRIDGE_EVENT_STARTED, "native stub started", 0);
     usleep(10000);
 
     emit(context, callback, CELLARKIT_BRIDGE_EVENT_INTERACTIVE, "native stub interactive", 0);

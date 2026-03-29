@@ -27,6 +27,8 @@ typedef struct {
     const char *jit_mode;
     const char *content_mode;
     const char *content_path;
+    const char *entry_executable_relative_path;
+    const char *resolved_executable_path;
     int32_t memory_budget_mb;
     int32_t shader_cache_budget_mb;
     int32_t has_bookmark;

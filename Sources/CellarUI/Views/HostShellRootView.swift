@@ -209,6 +209,9 @@ public struct HostShellRootView: View {
                 if let contentMode = container.contentReference?.mode {
                     LabeledContent("Content mode", value: label(for: contentMode))
                 }
+                if let entryExecutableRelativePath = container.entryExecutableRelativePath {
+                    LabeledContent("Entry executable", value: entryExecutableRelativePath)
+                }
                 if let resolvedContentPath = model.resolvedContentPath {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Resolved content")

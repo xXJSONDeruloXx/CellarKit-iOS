@@ -7,6 +7,7 @@ public struct ContainerFactory: Sendable {
         from request: GameLaunchRequest,
         decision: PlanningDecision,
         contentReference: ImportedContentReference? = nil,
+        entryExecutableRelativePath: String? = nil,
         titleOverride: String? = nil
     ) -> ContainerDescriptor {
         let title = titleOverride ?? request.title
@@ -17,6 +18,7 @@ public struct ContainerFactory: Sendable {
             guestArchitecture: request.guestArchitecture,
             importPath: contentReference?.pathHint,
             contentReference: contentReference,
+            entryExecutableRelativePath: entryExecutableRelativePath,
             runtimeProfile: makeRuntimeProfile(request: request, decision: decision),
             lastLaunchedAt: nil
         )

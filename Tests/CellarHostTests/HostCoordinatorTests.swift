@@ -108,6 +108,7 @@ final class HostCoordinatorTests: XCTestCase {
         let loaded = try await coordinator.loadContainer(id: created.descriptor.id)
 
         XCTAssertEqual(created.descriptor.contentReference?.mode, .managedCopy)
+        XCTAssertEqual(created.descriptor.entryExecutableRelativePath, "Installed.exe")
         XCTAssertTrue(created.descriptor.importPath?.hasSuffix("Installed.exe") == true)
         XCTAssertEqual(try Data(contentsOf: URL(fileURLWithPath: created.descriptor.importPath!)), Data("payload".utf8))
         XCTAssertEqual(loaded?.id, created.descriptor.id)
@@ -152,6 +153,7 @@ final class HostCoordinatorTests: XCTestCase {
         let resolvedURL = try await coordinator.resolvedContentURL(for: created.descriptor.id)
 
         XCTAssertEqual(created.descriptor.contentReference?.mode, .externalSecurityScopedReference)
+        XCTAssertNil(created.descriptor.entryExecutableRelativePath)
         XCTAssertNotNil(created.descriptor.contentReference?.bookmarkIdentifier)
         XCTAssertEqual(resolvedURL?.standardizedFileURL.path, sourceURL.standardizedFileURL.path)
     }

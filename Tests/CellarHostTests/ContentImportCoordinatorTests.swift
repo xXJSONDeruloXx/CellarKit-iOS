@@ -25,6 +25,7 @@ final class ContentImportCoordinatorTests: XCTestCase {
 
         XCTAssertEqual(imported.contentReference.mode, .managedCopy)
         XCTAssertEqual(imported.contentReference.originalFilename, "Source.exe")
+        XCTAssertEqual(imported.entryExecutableRelativePath, "Game.exe")
         XCTAssertTrue(imported.contentReference.pathHint?.hasSuffix("Game.exe") == true)
         XCTAssertEqual(try Data(contentsOf: imported.storedURL!), Data("demo".utf8))
     }
@@ -47,6 +48,7 @@ final class ContentImportCoordinatorTests: XCTestCase {
         let resolved = try bookmarkStore.resolve(identifier: imported.contentReference.bookmarkIdentifier!)
 
         XCTAssertEqual(imported.contentReference.mode, .externalSecurityScopedReference)
+        XCTAssertNil(imported.entryExecutableRelativePath)
         XCTAssertEqual(resolved.standardizedFileURL.path, sourceURL.standardizedFileURL.path)
     }
 
@@ -64,6 +66,7 @@ final class ContentImportCoordinatorTests: XCTestCase {
 
         XCTAssertEqual(imported.contentReference.mode, .bundledSample)
         XCTAssertEqual(imported.contentReference.pathHint, "Samples/Probe/Sample.exe")
+        XCTAssertEqual(imported.entryExecutableRelativePath, "Sample.exe")
         XCTAssertNil(imported.storedURL)
     }
 }
