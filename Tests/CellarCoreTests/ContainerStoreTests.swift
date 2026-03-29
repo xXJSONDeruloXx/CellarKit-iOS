@@ -42,4 +42,32 @@ final class ContainerStoreTests: XCTestCase {
         let afterDelete = try store.loadAll()
         XCTAssertEqual(afterDelete, [second])
     }
+
+    func testLoadByIDAndUpdateLastLaunchedAt() throws {
+        let tempRoot = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        let store = ContainerStore(rootURL: tempRoot)
+        defer { try? FileManager.default.removeItem(at: tempRoot) }
+
+        let descriptor = ContainerDescriptor(
+            title: "Launchable",
+            storefront: .localImport,
+            acquisitionMode: .localImport,
+            guestArchitecture: .windowsARM64,
+            runtimeProfile: RuntimeProfile(
+                backendPreference: .wineARM64,
+                graphicsBackend: .dxvkMoltenVK
+            )
+        )
+
+        try store.save(descriptor)
+        let loaded = try store.load(id: descriptor.id)
+        XCTAssertEqual(loaded?.id, descriptor.id)
+        XCTAssertNil(loaded?.lastLaunchedAt)
+
+        let launchedAt = Date(timeIntervalSince1970: 1_700_001_000)
+        try store.updateLastLaunchedAt(id: descriptor.id, at: launchedAt)
+
+        let updated = try store.load(id: descriptor.id)
+        XCTAssertEqual(updated?.lastLaunchedAt, launchedAt)
+    }
 }
