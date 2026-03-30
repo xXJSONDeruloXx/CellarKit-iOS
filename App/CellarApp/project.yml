@@ -62,6 +62,18 @@ targets:
           - ${SRCROOT}/../../Resources/WineRuntime/wine-stub.c
         outputFiles:
           - ${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Binaries/wine-stub
+      - name: "Bundle test payloads"
+        script: |
+          set -e
+          PAYLOADS_DIR="${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Payloads"
+          mkdir -p "${PAYLOADS_DIR}"
+          cp -f "${SRCROOT}/../../Resources/TestPayloads/hello-win32.exe" \
+            "${PAYLOADS_DIR}/hello-win32.exe"
+          echo "Bundled hello-win32.exe → ${PAYLOADS_DIR}/"
+        inputFiles:
+          - ${SRCROOT}/../../Resources/TestPayloads/hello-win32.exe
+        outputFiles:
+          - ${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Payloads/hello-win32.exe
   CellarAppUITests:
     type: bundle.ui-testing
     platform: iOS

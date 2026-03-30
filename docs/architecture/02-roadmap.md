@@ -96,16 +96,18 @@ What shipped:
 - Legacy simulated-events fallback retained for when no binary is present.
 - 35 unit tests + 6 E2E UI tests all pass.
 
-### Stage 2 — real Wine binary (next)
+### Stage 2 — real Wine binary ✅ complete (2026-03-30)
 
-Goal: replace `wine-stub` with a real `wine64` build so actual Windows PE binaries execute.
-
-Preferred order:
-1. Install / cross-compile Wine macOS ARM64 (`brew install --build-from-source wine-stable` or use a pre-built Homebrew bottle).
-2. Copy `wine64` + required dylibs into `CellarApp.app/Binaries/` via the same build phase.
-3. Update `cellarkit_bridge.c` argv from `[stub, --exe, ...]` to `[wine64, exe_path]`.
-4. Bundle a simple Windows console `.exe` (Hello World PE, no graphics) as a test payload.
-5. See actual Windows CRT output in the runtime log surface.
+What shipped:
+- `wine-crossover` 23.7.1 (CrossOverFOSS / x86_64/Rosetta 2) installed via `brew install --cask gcenx/wine/wine-crossover`.
+- `mingw-w64` cross-compiler installed; `hello-win32.exe` (PE32+ x86-64) compiled and bundled in `CellarApp.app/Payloads/` via a new Xcode build phase.
+- Bridge `cellarkit_bridge.c` updated: `runtime_is_wine=1` path uses `[wine64, exe_path]` argv; `build_wine_envp()` sets `WINEPREFIX`, `WINEDEBUG`, `WINESERVER` (critical — Wine can’t resolve wineserver from `argv[0]` inside the simulator process), and prepends the wine bin dir to `PATH`.
+- `RuntimeLaunchConfigurationFactory` probes known wine64 install paths; falls back to wine-stub; resolves WINEPREFIX to a writable path inside the app’s Library directory.
+- `allowSystemWine: Bool` factory flag lets unit tests disable wine detection so results are environment-independent.
+- `CellarWine2Test` E2E test skips automatically when wine64 is not installed.
+- 35 unit tests + 6 original E2E tests + 1 new Wine E2E test all pass.
+- Observed output: `Hello from Windows! / CellarKit Stage-2 test payload / Process ID: 32 / Wine/NTDLL loaded OK`.
+- Session state: `exitedCleanly`, exit code 0, 15 real log lines.
 
 ### Stage 3 — graphics (future)
 

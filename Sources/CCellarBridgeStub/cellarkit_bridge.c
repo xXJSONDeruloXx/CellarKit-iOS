@@ -37,14 +37,101 @@ static void chomp(char *s) {
 
 /* ── real process runner ──────────────────────────────────────────── */
 
+/* ── Wine environment builder ─────────────────────────────────────── */
+
+static char **build_wine_envp(
+    const char *wine_binary_path,
+    const char *wineprefix,
+    const char *winedebug_val)
+{
+    int n = 0;
+    for (char **e = environ; *e; e++) n++;
+
+    char **envp = calloc((size_t)(n + 10), sizeof(char *));
+    int j = 0;
+
+    /* Build a PATH that includes wine's own bin dir (so wineserver is found)
+     * prepended to whatever the parent process has. */
+    char wine_bin_dir[4096] = "";
+    if (wine_binary_path) {
+        strncpy(wine_bin_dir, wine_binary_path, sizeof(wine_bin_dir) - 1);
+        char *slash = strrchr(wine_bin_dir, '/');
+        if (slash) *slash = '\0';
+    }
+    const char *parent_path = getenv("PATH");
+    char new_path[8192];
+    if (wine_bin_dir[0] && parent_path) {
+        snprintf(new_path, sizeof(new_path), "%s:%s", wine_bin_dir, parent_path);
+    } else if (wine_bin_dir[0]) {
+        snprintf(new_path, sizeof(new_path), "%s:/usr/bin:/bin", wine_bin_dir);
+    } else {
+        snprintf(new_path, sizeof(new_path), "%s",
+                 parent_path ? parent_path : "/usr/bin:/bin");
+    }
+
+    /* Copy parent env, stripping vars we're about to override. */
+    for (int i = 0; i < n; i++) {
+        if (strncmp(environ[i], "WINEPREFIX=",      11) == 0) continue;
+        if (strncmp(environ[i], "WINEDEBUG=",       10) == 0) continue;
+        if (strncmp(environ[i], "WINEDLLOVERRIDES=",17) == 0) continue;
+        if (strncmp(environ[i], "PATH=",             5) == 0) continue;
+        envp[j++] = strdup(environ[i]);
+    }
+
+    /* Inject patched PATH */
+    {
+        char buf[8256];
+        snprintf(buf, sizeof(buf), "PATH=%s", new_path);
+        envp[j++] = strdup(buf);
+    }
+
+    /* Explicitly set WINESERVER so wine64 doesn’t have to resolve it from
+     * argv[0] (which fails inside the iOS simulator’s process environment). */
+    if (wine_bin_dir[0]) {
+        char buf[4096];
+        snprintf(buf, sizeof(buf), "WINESERVER=%s/wineserver", wine_bin_dir);
+        envp[j++] = strdup(buf);
+    }
+
+    /* WINEPREFIX */
+    if (wineprefix && wineprefix[0]) {
+        char buf[4096];
+        snprintf(buf, sizeof(buf), "WINEPREFIX=%s", wineprefix);
+        envp[j++] = strdup(buf);
+    }
+
+    /* WINEDEBUG */
+    {
+        char buf[256];
+        snprintf(buf, sizeof(buf), "WINEDEBUG=%s",
+                 winedebug_val ? winedebug_val : "-all");
+        envp[j++] = strdup(buf);
+    }
+
+    /* Suppress menu-builder and Mono/Gecko install dialogs. */
+    envp[j++] = strdup("WINEDLLOVERRIDES="
+                       "winemenubuilder.exe=d;mscoree,mshtml=");
+
+    envp[j] = NULL;
+    return envp;
+}
+
+static void free_envp(char **envp)
+{
+    if (!envp) return;
+    for (int i = 0; envp[i]; i++) free(envp[i]);
+    free(envp);
+}
+
 /*
- * Spawn `executable` with `argv`, feed its combined stdout+stderr back
- * line-by-line as LOG events.  Returns the process exit code, or -1 on
- * spawn failure.
+ * Spawn `executable` with `argv` and optional `envp` (NULL → inherit
+ * parent environ), feed its combined stdout+stderr back line-by-line
+ * as LOG events.  Returns the process exit code, or -1 on spawn failure.
  */
 static int run_process(
     const char        *executable,
     char *const        argv[],
+    char *const        envp[],
     void              *context,
     cellarkit_bridge_callback callback)
 {
@@ -68,7 +155,8 @@ static int run_process(
     posix_spawn_file_actions_addclose(&fa, err_pipe[1]);
 
     pid_t pid = 0;
-    int rc = posix_spawn(&pid, executable, &fa, NULL, argv, environ);
+    int rc = posix_spawn(&pid, executable, &fa, NULL, argv,
+                          envp ? (char *const *)envp : environ);
     posix_spawn_file_actions_destroy(&fa);
 
     /* Close write-ends in parent — child owns them now. */
@@ -218,34 +306,50 @@ void cellarkit_bridge_run(
     /* ── Path A: real process execution ───────────────────── */
     if (config.runtime_binary_path && config.runtime_binary_path[0] != '\0') {
 
-        /* Build argv for the runtime binary.
-         *
-         * wine-stub (and eventually real Wine) uses:
-         *   wine-stub --exe <path> --backend <b> --graphics <g>
-         *             --memory <mb> --title <title>
-         */
-        const char *exe_arg   = config.resolved_executable_path
-                                  ? config.resolved_executable_path : "";
-        const char *title_arg = config.title ? config.title : "";
-        const char *back_arg  = config.backend ? config.backend : "";
-        const char *gfx_arg   = config.graphics_backend
-                                  ? config.graphics_backend : "";
-        char mem_str[32];
-        snprintf(mem_str, sizeof(mem_str), "%d", config.memory_budget_mb);
+        const char *exe_arg = config.resolved_executable_path
+                               ? config.resolved_executable_path : "";
 
-        /* argv must be char*const[], not const char*[]. */
-        char *argv[] = {
-            (char *)config.runtime_binary_path,
-            "--exe",      (char *)exe_arg,
-            "--backend",  (char *)back_arg,
-            "--graphics", (char *)gfx_arg,
-            "--memory",   mem_str,
-            "--title",    (char *)title_arg,
-            NULL
-        };
+        char **wine_envp = NULL;
+        int    exit_code = -1;
 
-        int exit_code = run_process(config.runtime_binary_path, argv,
+        if (config.runtime_is_wine) {
+            /* ── Real Wine: argv = [wine64, exe_path] ─────────────────── */
+            char *argv[] = {
+                (char *)config.runtime_binary_path,
+                (char *)exe_arg,
+                NULL
+            };
+            wine_envp = build_wine_envp(config.runtime_binary_path,
+                                        config.wineprefix_path,
+                                        config.winedebug);
+            exit_code = run_process(config.runtime_binary_path, argv,
+                                    (char *const *)wine_envp,
                                     context, callback);
+        } else {
+            /* ── wine-stub: argv = [stub, --exe, path, --backend, ...] ─ */
+            const char *back_arg  = config.backend
+                                      ? config.backend : "";
+            const char *gfx_arg   = config.graphics_backend
+                                      ? config.graphics_backend : "";
+            const char *title_arg = config.title ? config.title : "";
+            char mem_str[32];
+            snprintf(mem_str, sizeof(mem_str), "%d", config.memory_budget_mb);
+
+            char *argv[] = {
+                (char *)config.runtime_binary_path,
+                "--exe",      (char *)exe_arg,
+                "--backend",  (char *)back_arg,
+                "--graphics", (char *)gfx_arg,
+                "--memory",   mem_str,
+                "--title",    (char *)title_arg,
+                NULL
+            };
+            exit_code = run_process(config.runtime_binary_path, argv,
+                                    NULL,
+                                    context, callback);
+        }
+
+        free_envp(wine_envp);
 
         if (exit_code < 0) {
             /* run_process already emitted FAILED */
@@ -260,9 +364,8 @@ void cellarkit_bridge_run(
             snprintf(msg, sizeof(msg), "process exited with code %d", exit_code);
             emit(context, callback, CELLARKIT_BRIDGE_EVENT_FAILED, msg, exit_code);
         } else {
-            char msg[64];
-            snprintf(msg, sizeof(msg), "process exited cleanly (code 0)");
-            emit(context, callback, CELLARKIT_BRIDGE_EVENT_EXITED, msg, 0);
+            emit(context, callback, CELLARKIT_BRIDGE_EVENT_EXITED,
+                 "process exited cleanly (code 0)", 0);
         }
         return;
     }

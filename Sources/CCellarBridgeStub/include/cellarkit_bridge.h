@@ -32,6 +32,19 @@ typedef struct {
     /* Path to the Wine binary (or wine-stub placeholder) to posix_spawn.
        NULL / empty string → fall back to legacy simulated events. */
     const char *runtime_binary_path;
+
+    /* 1 = runtime_binary_path points at a real Wine installation;
+       use Wine-style argv: [wine64, exe_path].
+       0 = wine-stub style: [stub, --exe, exe_path, --backend, ...]. */
+    int32_t runtime_is_wine;
+
+    /* WINEPREFIX directory (writable).  Passed as WINEPREFIX env var.
+       NULL = Wine will fall back to ~/.wine (probably wrong inside sandbox). */
+    const char *wineprefix_path;
+
+    /* WINEDEBUG spec, e.g. "-all" to suppress noise.  NULL = Wine default. */
+    const char *winedebug;
+
     int32_t memory_budget_mb;
     int32_t shader_cache_budget_mb;
     int32_t has_bookmark;

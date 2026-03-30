@@ -36,48 +36,55 @@ public struct NativeRuntimeBridge: RuntimeBridging, Sendable {
             let opaque = Unmanaged.passRetained(context).toOpaque()
 
             Task.detached {
-                withOptionalCString(configuration.contentMode?.rawValue) { contentModePointer in
-                    withOptionalCString(configuration.contentPath) { contentPathPointer in
-                        withOptionalCString(configuration.entryExecutableRelativePath) { entryExecutablePointer in
-                            withOptionalCString(configuration.resolvedExecutablePath) { resolvedExecutablePointer in
-                                withOptionalCString(configuration.bookmarkIdentifier) { bookmarkPointer in
-                                        withOptionalCString(configuration.runtimeBinaryPath) { runtimeBinaryPointer in
-                                            configuration.title.withCString { titlePointer in
-                                                configuration.backend.rawValue.withCString { backendPointer in
-                                                    configuration.productLane.rawValue.withCString { lanePointer in
-                                                        configuration.graphicsBackend.rawValue.withCString { graphicsPointer in
-                                                            configuration.distributionChannel.rawValue.withCString { distributionPointer in
-                                                                configuration.jitMode.rawValue.withCString { jitPointer in
-                                                                    let config = cellarkit_bridge_config(
-                                                                        title: titlePointer,
-                                                                        backend: backendPointer,
-                                                                        product_lane: lanePointer,
-                                                                        graphics_backend: graphicsPointer,
-                                                                        distribution_channel: distributionPointer,
-                                                                        jit_mode: jitPointer,
-                                                                        content_mode: contentModePointer,
-                                                                        content_path: contentPathPointer,
-                                                                        entry_executable_relative_path: entryExecutablePointer,
-                                                                        resolved_executable_path: resolvedExecutablePointer,
-                                                                        runtime_binary_path: runtimeBinaryPointer,
-                                                                        memory_budget_mb: Int32(configuration.memoryBudgetMB),
-                                                                        shader_cache_budget_mb: Int32(configuration.shaderCacheBudgetMB),
-                                                                        has_bookmark: bookmarkPointer == nil ? 0 : 1,
-                                                                        exit_code: exitCode,
-                                                                        emit_failure: emitFailure ? 1 : 0
-                                                                    )
-                                                                    cellarkit_bridge_run(config, opaque, nativeBridgeCallback)
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                            }
-                        }
+                withOptionalCString(configuration.contentMode?.rawValue) { contentModePtr in
+                withOptionalCString(configuration.contentPath) { contentPathPtr in
+                withOptionalCString(configuration.entryExecutableRelativePath) { entryExePtr in
+                withOptionalCString(configuration.resolvedExecutablePath) { resolvedExePtr in
+                withOptionalCString(configuration.bookmarkIdentifier) { bookmarkPtr in
+                withOptionalCString(configuration.runtimeBinaryPath) { runtimeBinPtr in
+                withOptionalCString(configuration.winePrefixPath) { winePrefixPtr in
+                withOptionalCString(configuration.wineDebug) { wineDebugPtr in
+                    configuration.title.withCString { titlePtr in
+                    configuration.backend.rawValue.withCString { backendPtr in
+                    configuration.productLane.rawValue.withCString { lanePtr in
+                    configuration.graphicsBackend.rawValue.withCString { graphicsPtr in
+                    configuration.distributionChannel.rawValue.withCString { distPtr in
+                    configuration.jitMode.rawValue.withCString { jitPtr in
+                        let config = cellarkit_bridge_config(
+                            title: titlePtr,
+                            backend: backendPtr,
+                            product_lane: lanePtr,
+                            graphics_backend: graphicsPtr,
+                            distribution_channel: distPtr,
+                            jit_mode: jitPtr,
+                            content_mode: contentModePtr,
+                            content_path: contentPathPtr,
+                            entry_executable_relative_path: entryExePtr,
+                            resolved_executable_path: resolvedExePtr,
+                            runtime_binary_path: runtimeBinPtr,
+                            runtime_is_wine: configuration.runtimeIsWine ? 1 : 0,
+                            wineprefix_path: winePrefixPtr,
+                            winedebug: wineDebugPtr,
+                            memory_budget_mb: Int32(configuration.memoryBudgetMB),
+                            shader_cache_budget_mb: Int32(configuration.shaderCacheBudgetMB),
+                            has_bookmark: bookmarkPtr == nil ? 0 : 1,
+                            exit_code: exitCode,
+                            emit_failure: emitFailure ? 1 : 0
+                        )
+                        cellarkit_bridge_run(config, opaque, nativeBridgeCallback)
                     }
+                    }
+                    }
+                    }
+                    }
+                    }
+                }
+                }
+                }
+                }
+                }
+                }
+                }
                 }
 
                 let retained = Unmanaged<NativeBridgeContext>.fromOpaque(opaque)

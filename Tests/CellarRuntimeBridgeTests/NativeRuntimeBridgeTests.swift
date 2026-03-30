@@ -7,8 +7,18 @@ final class NativeRuntimeBridgeTests: XCTestCase {
 
     // MARK: - Happy path (no runtime binary bundled → legacy fallback)
 
+    // All tests use allowSystemWine: false so results don't depend on whether
+    // wine64 is installed on the host machine.
+    private func makeBridge(exitCode: Int32 = 0, emitFailure: Bool = false) -> NativeRuntimeBridge {
+        NativeRuntimeBridge(
+            exitCode: exitCode,
+            emitFailure: emitFailure,
+            configurationFactory: RuntimeLaunchConfigurationFactory(allowSystemWine: false)
+        )
+    }
+
     func testNativeRuntimeBridgeEmitsExpectedHappyPathEvents() async {
-        let bridge = NativeRuntimeBridge(exitCode: 0, emitFailure: false)
+        let bridge = makeBridge()
         let container = ContainerDescriptor(
             title: "Native Stub Game",
             storefront: .localImport,
@@ -65,7 +75,7 @@ final class NativeRuntimeBridgeTests: XCTestCase {
     // MARK: - Failure flag
 
     func testNativeRuntimeBridgeCanEmitFailure() async {
-        let bridge = NativeRuntimeBridge(exitCode: 12, emitFailure: true)
+        let bridge = makeBridge(exitCode: 12, emitFailure: true)
         let container = ContainerDescriptor(
             title: "Failure Case",
             storefront: .localImport,
@@ -91,7 +101,7 @@ final class NativeRuntimeBridgeTests: XCTestCase {
     // MARK: - Missing executable validation
 
     func testNativeRuntimeBridgeFailsWhenManagedPayloadExecutableCannotBeResolved() async {
-        let bridge = NativeRuntimeBridge(exitCode: 0, emitFailure: false)
+        let bridge = makeBridge()
         let container = ContainerDescriptor(
             title: "Broken Payload",
             storefront: .localImport,

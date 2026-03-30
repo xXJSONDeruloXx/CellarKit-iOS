@@ -187,6 +187,56 @@ public final class HostShellViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Stage 2: Hello Win32 console preset
+
+    /// Creates a container for the bundled hello-win32.exe test payload.
+    /// This uses real Wine (wine64) when available and produces real Windows
+    /// CRT output in the runtime log surface.
+    public func createHelloWin32Container() async {
+        isBusy = true
+        defer { isBusy = false }
+
+        capabilitySnapshot = capabilityDetector.detect()
+
+        // Resolve the exe path inside the app bundle so wine64 can find it.
+        let exePath = Bundle.main.bundlePath
+            .appending("/Payloads/hello-win32.exe")
+
+        let request = GameLaunchRequest(
+            title: "Hello Win32 (Console)",
+            storefront: .localImport,
+            acquisitionMode: .bundledSample,
+            guestArchitecture: .windowsX64,
+            requiresGraphicsTranslation: false,
+            allowsInterpreterFallback: true,
+            allowsDiagnosticVMFallback: false
+        )
+        let contentReference = ImportedContentReference(
+            mode: .bundledSample,
+            pathHint: exePath,
+            originalFilename: "hello-win32.exe"
+        )
+
+        do {
+            let created = try await coordinator.createContainer(
+                request: request,
+                capabilities: capabilitySnapshot.capabilities,
+                productLane: capabilitySnapshot.productLane,
+                contentReference: contentReference,
+                entryExecutableRelativePath: nil  // pathHint IS the exe
+            )
+            selectedContainerID = created.descriptor.id
+            planningDecision = created.planningDecision
+            await refresh()
+            statusMessage = "Created Hello Win32 (Stage-2 real Wine payload)."
+            if shouldAutoLaunchAfterCreate {
+                await launchSelectedContainer()
+            }
+        } catch {
+            statusMessage = "Create failed: \(error.localizedDescription)"
+        }
+    }
+
     public func importPayload(
         from sourceURL: URL,
         mode: ImportedContentMode = .managedCopy,

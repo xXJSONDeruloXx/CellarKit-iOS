@@ -15,6 +15,7 @@
 		A8AFA61AA94EC7B6879E1B11 /* CellarQuickTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5960DF17CF997459E9C60B6 /* CellarQuickTest.swift */; };
 		C380189602FE055C46DC7DF2 /* CellarDemoTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FD0F139AA6153B3D580293F /* CellarDemoTest.swift */; };
 		CC4717E690574988B0F14562 /* CellarDiagnosticTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01E8CEC9E467F196388EB4CA /* CellarDiagnosticTest.swift */; };
+		F09BAFC7016C060A3BCA1D13 /* HelloWin32UITest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7346A68E5EA29C172D68CE34 /* HelloWin32UITest.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +35,7 @@
 		3FD0F139AA6153B3D580293F /* CellarDemoTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellarDemoTest.swift; sourceTree = "<group>"; };
 		6515FDFF39FF412F6990F0B4 /* CellarApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = CellarApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6738DA6622C45FDBFC40FE15 /* CellarAppUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CellarAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7346A68E5EA29C172D68CE34 /* HelloWin32UITest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelloWin32UITest.swift; sourceTree = "<group>"; };
 		9319E04B913AB0203A8B0ACA /* CellarKit-iOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "CellarKit-iOS"; path = ../..; sourceTree = SOURCE_ROOT; };
 		B5960DF17CF997459E9C60B6 /* CellarQuickTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellarQuickTest.swift; sourceTree = "<group>"; };
 		BB39F6D06FFEB609DCF2AA18 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -87,6 +89,7 @@
 				01E8CEC9E467F196388EB4CA /* CellarDiagnosticTest.swift */,
 				251A152EBA1C89AEB57875E8 /* CellarKitE2ETests.swift */,
 				B5960DF17CF997459E9C60B6 /* CellarQuickTest.swift */,
+				7346A68E5EA29C172D68CE34 /* HelloWin32UITest.swift */,
 			);
 			path = CellarAppUITests;
 			sourceTree = "<group>";
@@ -108,6 +111,7 @@
 			buildConfigurationList = B4A7212B27CD61B4CCA8DFF0 /* Build configuration list for PBXNativeTarget "CellarApp" */;
 			buildPhases = (
 				C642E16FF2C07E5D4429D449 /* Compile wine-stub */,
+				A11526A126C2A94E54331DE6 /* Bundle test payloads */,
 				23D694818FFBFEAA693C65EA /* Sources */,
 				C51553903D77C11B679C1AEB /* Resources */,
 				6F76F85503186A8CD3208A7F /* Frameworks */,
@@ -197,6 +201,26 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		A11526A126C2A94E54331DE6 /* Bundle test payloads */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${SRCROOT}/../../Resources/TestPayloads/hello-win32.exe",
+			);
+			name = "Bundle test payloads";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Payloads/hello-win32.exe",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\nPAYLOADS_DIR=\"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Payloads\"\nmkdir -p \"${PAYLOADS_DIR}\"\ncp -f \"${SRCROOT}/../../Resources/TestPayloads/hello-win32.exe\" \\\n  \"${PAYLOADS_DIR}/hello-win32.exe\"\necho \"Bundled hello-win32.exe → ${PAYLOADS_DIR}/\"\n";
+		};
 		C642E16FF2C07E5D4429D449 /* Compile wine-stub */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -237,6 +261,7 @@
 				CC4717E690574988B0F14562 /* CellarDiagnosticTest.swift in Sources */,
 				1AEDFB4CD0954E07047EDB6C /* CellarKitE2ETests.swift in Sources */,
 				A8AFA61AA94EC7B6879E1B11 /* CellarQuickTest.swift in Sources */,
+				F09BAFC7016C060A3BCA1D13 /* HelloWin32UITest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

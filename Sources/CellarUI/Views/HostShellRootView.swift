@@ -174,6 +174,16 @@ public struct HostShellRootView: View {
             .accessibilityIdentifier("createHelloCubeButton")
             .disabled(model.isBusy)
 
+            Button("🍷 Hello Win32") {
+                Task {
+                    await model.createHelloWin32Container()
+                }
+            }
+            .buttonStyle(.bordered)
+            .tint(.orange)
+            .accessibilityIdentifier("createHelloWin32Button")
+            .disabled(model.isBusy)
+
             Button("Import Copy…") {
                 selectedImportMode = .managedCopy
                 isImportingPayload = true
