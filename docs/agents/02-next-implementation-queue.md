@@ -1,102 +1,137 @@
 # Next implementation queue
 
-This is the concrete queue I would hand to the next agent session.
+Last updated: 2026-03-30 (post Stage-1 bridge, commit `c877994`)
 
-## Already implemented foundation
+---
 
-These items are no longer the next priority because they already exist in some form:
-- iOS app target scaffold (`App/CellarApp`)
-- SwiftUI host shell (`CellarUI`)
-- container persistence
-- launch-session persistence
-- benchmark persistence
-- managed-copy import flow
-- external-reference / bookmark-backed linking flow
-- native C-backed runtime bridge stub
-- simulator UI smoke test automation
+## Already shipped — no longer the priority
 
-## Tier 1 — highest-value remaining work
+| Item | Commit / notes |
+|------|---------------|
+| iOS app target scaffold | early sessions |
+| SwiftUI host shell | early sessions |
+| Container + session + benchmark persistence | early sessions |
+| Managed-copy and bookmark import flows | early sessions |
+| Simulator UI smoke tests (6 E2E, 35 unit) | `a355b12` |
+| URL percent-encoding bug in ContainerStore | `6c77640` |
+| **Stage 1 real bridge: posix_spawn + pipe capture** | **`c877994`** |
+| wine-stub placeholder binary (Xcode build phase) | `c877994` |
+| Binary executable-bit workaround (copy to tmp, chmod) | `c877994` |
 
-### 1. Replace the native stub with a real runtime bootstrap shim
-Build the first true bridge layer that can:
-- assemble launch config into native runtime parameters,
-- consume the resolved launch executable path from container metadata,
-- start a real embedded runtime thread/process loop,
-- surface stdout/stderr/log callbacks,
-- stop cleanly,
-- distinguish bootstrap failure from runtime failure.
+---
 
-### 2. Harden security-scoped bookmark lifecycle
-The current external-link path is structurally present, but needs production-style handling for:
-- stale bookmark detection,
-- re-resolution after relaunch,
+## Tier 1 — Active next work
+
+### 1. Stage 2: real Wine binary for simulator  ← **START HERE**
+
+**Goal**: replace `wine-stub` with a real `wine64` build so Windows PE binaries execute.
+
+**Steps**:
+1. Obtain a macOS ARM64 `wine64` binary:
+   - Option A: `brew install --build-from-source wine-stable` (takes 30-60 min)
+   - Option B: Download a pre-built bottle or Kegworks bundle — extract `wine64` + dylibs
+   - Option C: Use `wine-crossover` from the CrossOver SDK if available
+2. Confirm it runs on the machine: `wine64 --version`
+3. Bundle `wine64` + required dylibs into `CellarApp.app/Binaries/wine64/` via the build phase.
+4. Update `RuntimeLaunchConfiguration.resolveRuntimeBinaryPath()` to look for `wine64` binary.
+5. Update `cellarkit_bridge.c` argv: `[wine64_path, exe_path]` replacing `[stub_path, --exe, exe_path, ...]`.
+6. Bundle a simple Windows console `.exe` as a test payload (Hello World, no GUI, no D3D).
+   - `Tests/Fixtures/hello-win32.exe` — can cross-compile from C with `x86_64-w64-mingw32-gcc`.
+7. Create a container pointing at the console exe, launch it, verify stdout appears in the log surface.
+
+**Success criteria**: runtime log surface shows `Hello from Windows!` (or similar CRT output) from a real Wine process executing a PE binary.
+
+**Blockers to watch**:
+- Wine needs `WINEPREFIX` to exist — pre-create or let Wine initialize it on first run.
+- `posix_spawn` env must pass `WINEPREFIX`, `HOME`, `PATH` — update `build_spawn_envp()` in `cellarkit_bridge.c`.
+- On the simulator, Wine runs as a macOS process and should work out of the box without JIT entitlements.
+- On a real device, Wine needs JIT (`MAP_JIT`, `pthread_jit_write_protect_np`) — separate stage.
+
+---
+
+### 2. Stage 2b: console exe test fixture
+
+**Goal**: have a tiny pre-compiled Windows exe checked in as a test fixture.
+
+**Steps**:
+1. Cross-compile with `x86_64-w64-mingw32-gcc` (install via `brew install mingw-w64`):
+   ```c
+   // hello-win32.c
+   #include <stdio.h>
+   int main() {
+       printf("Hello from Windows!\n");
+       fflush(stdout);
+       return 0;
+   }
+   ```
+   ```sh
+   x86_64-w64-mingw32-gcc -o Tests/Fixtures/hello-win32.exe hello-win32.c
+   ```
+2. Add a `BundledSample` container preset for `hello-win32.exe` alongside the Hello Cube preset.
+3. Smoke test: create container → launch → see "Hello from Windows!" in log surface.
+
+---
+
+## Tier 2 — high value, after Wine boots
+
+### 3. WINEPREFIX initialization and lifecycle
+
+- Pre-create a minimal `WINEPREFIX` in the app's Library directory.
+- Store per-container prefixes at `<CellarKit root>/Containers/<UUID>/prefix/`.
+- Surface prefix creation progress in the launch surface (takes 3-5 seconds first run).
+- Handle `WINEPREFIX` upgrade on Wine version change.
+
+### 4. Wine stdout/stderr parsing for richer events
+
+Currently every stdout line becomes a flat `.log` event.  Parse Wine's known patterns:
+- `wine: could not load ...` → `.failed`
+- `fixme:` lines → deprioritized log tier
+- `err:` lines → elevated log tier
+- Process exit via signal (e.g. SIGSEGV) → `.failed(message: "crash: ...")`
+
+### 5. Harden security-scoped bookmark lifecycle
+
+The external-link path exists but needs:
+- stale bookmark detection and re-resolution after relaunch,
 - start/stop access windows,
-- permission-loss recovery UX,
-- clearer separation between sandbox-friendly links and merely simulated links.
+- permission-loss recovery UX.
 
-### 3. Add real-device capability detection
-Replace heuristics with stronger evidence where possible:
-- simulator vs device,
+### 6. Real-device capability detection
+
+Replace heuristics:
+- simulator vs device (reliable),
 - debugger attachment,
-- distribution-channel assumptions,
-- bookmark support behavior,
-- memory-limit-related state,
-- notes recorded for benchmark context.
+- JIT availability (`MAP_JIT` probe),
+- memory limit detection.
 
-## Tier 2 — still high value
+---
 
-### 4. Improve import UX
-Turn the current button-level flow into a clearer import experience:
-- import mode chooser,
-- file/folder guidance,
-- better success/failure messaging,
-- duplicate-name handling,
-- visible linked vs copied content state,
-- manual entry-executable override when inference is wrong.
+## Tier 3 — after Wine is stable
 
-### 5. Improve session and benchmark detail surfaces
-The host shell now has basic detail views, but still needs:
-- fuller log exploration,
-- easier failure triage,
-- export-friendly evidence presentation,
-- richer benchmark metadata.
+### 7. Graphics stack scaffolding
 
-### 6. Expand the runtime play-surface placeholder into a real runtime surface
-The placeholder now exists, but still needs to own:
-- runtime state banner,
-- log console toggle,
-- quick menu entry,
-- future overlay/controller hooks,
-- eventual real render/input ownership.
+- Investigate DXVK for ARM64 (Asahi Linux port or custom build).
+- Route Wine's Vulkan output through MoltenVK to a `CAMetalLayer`.
+- Hook `LaunchSurfaceView` up to the Metal layer instead of the spinning cube placeholder.
 
-## Tier 3 — after the above
+### 8. Input / control scaffolding
 
-### 7. Add first real runtime experiment
-Potential order:
-- minimal embedded native loop,
-- diagnostic executable sample,
-- ARM64-friendly narrow content path,
-- only then wider translation/runtime work.
+- Touch overlay stub.
+- Controller presence detection.
+- Session quick-menu entry point.
 
-### 8. Add input/control UX scaffolding
-At minimum prove one of:
-- touch overlay stub,
-- controller presence/status,
-- session quick menu.
+### 9. Benchmark capture expansion
 
-### 9. Expand benchmark capture
-Capture richer evidence beyond derived session timing:
-- device identity,
-- OS version,
-- thermal state if obtainable,
-- memory warnings / pressure signals,
-- launch artifact bundle paths.
+- Device identity, OS version, thermal state, memory pressure signals.
+- Per-launch artifact bundle path.
 
-## Explicitly defer for now
+---
 
-- multi-store auth implementation
-- cloud-save sync implementation
-- full controller editor
-- App Store submission work
-- broad compatibility claims
-- polished storefront/library UX
+## Explicitly deferred
+
+- Multi-store auth implementation
+- Cloud-save sync
+- Full controller editor
+- App Store submission
+- Broad compatibility claims
+- Polished storefront/library UX

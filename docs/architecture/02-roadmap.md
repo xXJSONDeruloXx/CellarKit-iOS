@@ -84,9 +84,32 @@ Deliverables:
 - one minimal backend hooked into the app,
 - stdout/stderr/event plumbing into Swift.
 
-Current status:
-- a native C-backed bridge stub, launch-configuration assembly, and end-to-end launch orchestration now exist,
-- the real runtime bridge is still the next major runtime milestone.
+### Stage 1 — real process execution ✅ complete (2026-03-30, commit c877994)
+
+What shipped:
+- `cellarkit_bridge.c` now uses `posix_spawn()` + bidirectional pipes instead of hard-coded fake events.
+- `wine-stub` compiled ARM64 binary bundled in `CellarApp.app/Binaries/` via Xcode preBuildScript.
+  - Simulator build: macOS ARM64 (platform 1) so the sim's host process can `posix_spawn()` it directly.
+  - Device build: iOS ARM64 (to be replaced by real Wine in Stage 2).
+- `RuntimeLaunchConfiguration.resolveRuntimeBinaryPath()` locates the binary, copies it to `NSTemporaryDirectory()`, and `chmod 0755` before passing the path to the bridge (`xcrun simctl install` strips the +x bit).
+- 31 real log lines captured from child stdout and stored in the session record.
+- Legacy simulated-events fallback retained for when no binary is present.
+- 35 unit tests + 6 E2E UI tests all pass.
+
+### Stage 2 — real Wine binary (next)
+
+Goal: replace `wine-stub` with a real `wine64` build so actual Windows PE binaries execute.
+
+Preferred order:
+1. Install / cross-compile Wine macOS ARM64 (`brew install --build-from-source wine-stable` or use a pre-built Homebrew bottle).
+2. Copy `wine64` + required dylibs into `CellarApp.app/Binaries/` via the same build phase.
+3. Update `cellarkit_bridge.c` argv from `[stub, --exe, ...]` to `[wine64, exe_path]`.
+4. Bundle a simple Windows console `.exe` (Hello World PE, no graphics) as a test payload.
+5. See actual Windows CRT output in the runtime log surface.
+
+### Stage 3 — graphics (future)
+
+Goal: route Wine's D3D11 output through DXVK → MoltenVK → Metal to a `CAMetalLayer` owned by `LaunchSurfaceView`.
 
 Acceptance tests:
 - start and stop runtime without app crash,
@@ -99,15 +122,20 @@ Goal:
 - launch something real.
 
 Preferred order:
-1. ARM64/ARM64EC-friendly target path
-2. x64 translation path with JIT support
-3. interpreter-only fallback path
+1. Windows console app via Wine (no graphics) — validates Wine + PE loader end-to-end
+2. ARM64/ARM64EC-friendly target path
+3. x64 translation path with JIT support
+4. interpreter-only fallback path
 
 Deliverables:
 - one launch pipeline from container metadata to running content,
 - visible rendering,
 - input path connected,
 - audio path connected.
+
+Current status:
+- `posix_spawn` bridge operational; `wine-stub` placeholder produces real logs.
+- Stage 2 (real Wine) is the active next milestone.
 
 Acceptance tests:
 - one known sample/game reaches menu or gameplay,
