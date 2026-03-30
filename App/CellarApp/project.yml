@@ -9,7 +9,7 @@ packages:
 settings:
   base:
     SWIFT_VERSION: 6.0
-    DEVELOPMENT_TEAM: ""
+    DEVELOPMENT_TEAM: "8XFZ738A9L"
     CODE_SIGN_STYLE: Automatic
 targets:
   CellarApp:
