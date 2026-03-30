@@ -13,6 +13,7 @@
 		52CAA2E39FEEBC607BD7F283 /* CellarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB2F975FBD6D89D4DB439BC2 /* CellarApp.swift */; };
 		5C93CEDC6D0C1A6EF60C2D91 /* CellarAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22051CA68177F163F98AC2CF /* CellarAppUITests.swift */; };
 		A8AFA61AA94EC7B6879E1B11 /* CellarQuickTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5960DF17CF997459E9C60B6 /* CellarQuickTest.swift */; };
+		C380189602FE055C46DC7DF2 /* CellarDemoTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FD0F139AA6153B3D580293F /* CellarDemoTest.swift */; };
 		CC4717E690574988B0F14562 /* CellarDiagnosticTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01E8CEC9E467F196388EB4CA /* CellarDiagnosticTest.swift */; };
 /* End PBXBuildFile section */
 
@@ -30,6 +31,7 @@
 		01E8CEC9E467F196388EB4CA /* CellarDiagnosticTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellarDiagnosticTest.swift; sourceTree = "<group>"; };
 		22051CA68177F163F98AC2CF /* CellarAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellarAppUITests.swift; sourceTree = "<group>"; };
 		251A152EBA1C89AEB57875E8 /* CellarKitE2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellarKitE2ETests.swift; sourceTree = "<group>"; };
+		3FD0F139AA6153B3D580293F /* CellarDemoTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellarDemoTest.swift; sourceTree = "<group>"; };
 		6515FDFF39FF412F6990F0B4 /* CellarApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = CellarApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6738DA6622C45FDBFC40FE15 /* CellarAppUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CellarAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9319E04B913AB0203A8B0ACA /* CellarKit-iOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "CellarKit-iOS"; path = ../..; sourceTree = SOURCE_ROOT; };
@@ -81,6 +83,7 @@
 			isa = PBXGroup;
 			children = (
 				22051CA68177F163F98AC2CF /* CellarAppUITests.swift */,
+				3FD0F139AA6153B3D580293F /* CellarDemoTest.swift */,
 				01E8CEC9E467F196388EB4CA /* CellarDiagnosticTest.swift */,
 				251A152EBA1C89AEB57875E8 /* CellarKitE2ETests.swift */,
 				B5960DF17CF997459E9C60B6 /* CellarQuickTest.swift */,
@@ -206,6 +209,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5C93CEDC6D0C1A6EF60C2D91 /* CellarAppUITests.swift in Sources */,
+				C380189602FE055C46DC7DF2 /* CellarDemoTest.swift in Sources */,
 				CC4717E690574988B0F14562 /* CellarDiagnosticTest.swift in Sources */,
 				1AEDFB4CD0954E07047EDB6C /* CellarKitE2ETests.swift in Sources */,
 				A8AFA61AA94EC7B6879E1B11 /* CellarQuickTest.swift in Sources */,

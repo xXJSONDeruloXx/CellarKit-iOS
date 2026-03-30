@@ -195,4 +195,18 @@ If another agent needs the shortest truthful list, it is:
   - Launch completes with DX11/DXVK/MoltenVK simulated log output from native C bridge stub
   - Launch surface sheet appears with live SpinningCubeView and translation pipeline badges
   - Session record and benchmark are persisted and visible after launch
-  - All 6 CellarKitE2ETests pass; all 35 unit tests pass
+  - All 6 `CellarKitE2ETests` pass; all 35 unit tests pass
+  - `CellarDemoTest.testShowSpinningCubeLive` passes end-to-end (57 s including 45 s hold)
+
+## Test environment notes
+
+- All UI tests must supply `CELLARKIT_ROOT_PATH` pointing to a fresh temp directory;
+  omitting it causes `waitForExistence` on container cells to satisfy immediately against
+  pre-existing store data, creating a race where the launch button is tapped while
+  `isBusy` is still `true` inside `refresh()`.
+- After tapping create, tests must wait for the `statusMessage` element to contain
+  `"Created Hello Cube"` — not just for a container cell — to guarantee `isBusy = false`
+  and `selectedContainerID` populated before tapping `launchSelectedButton`.
+- `launchSelectedButton` enabled state should be asserted with `XCTNSPredicateExpectation`
+  before calling `tap()` to catch any future regression where `isBusy` outlasts the
+  status-message update.

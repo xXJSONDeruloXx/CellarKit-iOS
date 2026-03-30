@@ -1,5 +1,10 @@
 import XCTest
 
+/// Quick diagnostic: dumps the live accessibility tree so we can see exactly
+/// what buttons/texts are reachable from a fresh app launch.
+///
+/// Run with:
+///   xcodebuild test -only-testing:CellarAppUITests/CellarDiagnosticTest/testDumpAccessibilityTree
 @MainActor
 final class CellarDiagnosticTest: XCTestCase {
     func testDumpAccessibilityTree() throws {
@@ -11,24 +16,8 @@ final class CellarDiagnosticTest: XCTestCase {
         app.launchEnvironment["CELLARKIT_DEBUGGER_ATTACHED"] = "true"
         app.launch()
 
-        // Wait for app to be ready — look for nav bar
-        let navBar = app.navigationBars["CellarKit"]
-        XCTAssertTrue(navBar.waitForExistence(timeout: 15), "Navigation bar should appear")
-        print("Nav bar appeared at \(Date())")
+        XCTAssertTrue(app.navigationBars["CellarKit"].waitForExistence(timeout: 15))
 
-        // Check button states
-        let btn = app.buttons["createHelloCubeButton"]
-        print("Button exists immediately: \(btn.exists)")
-        print("Button enabled: \(btn.isEnabled)")
-        print("isBusy (button disabled): \(!btn.isEnabled)")
-
-        // Wait for button to be enabled (isBusy = false)
-        let enabledPredicate = NSPredicate(format: "enabled == true")
-        let exp = XCTNSPredicateExpectation(predicate: enabledPredicate, object: btn)
-        let result = XCTWaiter.wait(for: [exp], timeout: 10)
-        print("Button became enabled: \(result == .completed)")
-
-        // All buttons
         print("=== ALL BUTTONS ===")
         for b in app.buttons.allElementsBoundByIndex {
             print("  '\(b.label)' id='\(b.identifier)' enabled=\(b.isEnabled) exists=\(b.exists)")
