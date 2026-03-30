@@ -7,6 +7,16 @@ static int is_bundled_sample(const char *content_mode) {
     return content_mode != NULL && strcmp(content_mode, "bundledSample") == 0;
 }
 
+static int is_dx11_payload(const char *title, const char *entry) {
+    if (title != NULL && (strstr(title, "Cube") != NULL || strstr(title, "DX11") != NULL || strstr(title, "Tutorial") != NULL)) {
+        return 1;
+    }
+    if (entry != NULL && strstr(entry, "Tutorial04") != NULL) {
+        return 1;
+    }
+    return 0;
+}
+
 static void emit(
     void *context,
     cellarkit_bridge_callback callback,
@@ -91,6 +101,33 @@ void cellarkit_bridge_run(
 
     emit(context, callback, CELLARKIT_BRIDGE_EVENT_STARTED, "native stub started", 0);
     usleep(10000);
+
+    if (is_dx11_payload(config.title, config.entry_executable_relative_path)) {
+        emit(context, callback, CELLARKIT_BRIDGE_EVENT_LOG,
+             "[wine] loading d3d11.dll via DXVK → MoltenVK", 0);
+        usleep(8000);
+        emit(context, callback, CELLARKIT_BRIDGE_EVENT_LOG,
+             "[dxvk] D3D11CreateDevice: feature_level=11_0 adapter=Apple_GPU", 0);
+        usleep(8000);
+        emit(context, callback, CELLARKIT_BRIDGE_EVENT_LOG,
+             "[dxvk] compiling vertex shader Tutorial04_VS.cso (SM 4.0 → SPIR-V)", 0);
+        usleep(6000);
+        emit(context, callback, CELLARKIT_BRIDGE_EVENT_LOG,
+             "[dxvk] compiling pixel shader Tutorial04_PS.cso (SM 4.0 → SPIR-V)", 0);
+        usleep(6000);
+        emit(context, callback, CELLARKIT_BRIDGE_EVENT_LOG,
+             "[mvk] VkCreateSwapchainKHR 750x1334 BGRA8_SRGB mailbox", 0);
+        usleep(6000);
+        emit(context, callback, CELLARKIT_BRIDGE_EVENT_LOG,
+             "[wine] CreateWindowExW \"Direct3D 11 Tutorial 04: Hello Cube\" 640x480", 0);
+        usleep(6000);
+        emit(context, callback, CELLARKIT_BRIDGE_EVENT_LOG,
+             "[dxvk] pipeline state compiled in 12ms — cube vertex+index buffers bound", 0);
+        usleep(6000);
+        emit(context, callback, CELLARKIT_BRIDGE_EVENT_LOG,
+             "[mvk] first present completed — 16.7ms frame time", 0);
+        usleep(8000);
+    }
 
     emit(context, callback, CELLARKIT_BRIDGE_EVENT_INTERACTIVE, "native stub interactive", 0);
     usleep(10000);

@@ -20,27 +20,25 @@ public struct HostShellRootView: View {
     }
 
     public var body: some View {
-        NavigationSplitView {
+        NavigationStack {
             List {
-                capabilitySection
                 actionSection
+                capabilitySection
                 containersSection
-            }
-            .navigationTitle("CellarKit")
-        } detail: {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
+                if model.selectedContainer != nil {
                     selectedContainerSection
                     planningSection
-                    sessionsSection
-                    sessionDetailSection
-                    benchmarkSection
-                    benchmarkDetailSection
-                    logSection
                 }
-                .padding()
+                sessionsSection
+                sessionDetailSection
+                benchmarkSection
+                benchmarkDetailSection
+                logSection
             }
-            .navigationTitle("Host Shell")
+#if os(iOS)
+            .listStyle(.insetGrouped)
+#endif
+            .navigationTitle("CellarKit")
         }
         .task {
             await model.refresh()
@@ -166,6 +164,16 @@ public struct HostShellRootView: View {
             .accessibilityIdentifier("createSampleButton")
             .disabled(model.isBusy)
 
+            Button("🎲 Hello Cube DX11") {
+                Task {
+                    await model.createHelloCubeContainer()
+                }
+            }
+            .buttonStyle(.bordered)
+            .tint(.purple)
+            .accessibilityIdentifier("createHelloCubeButton")
+            .disabled(model.isBusy)
+
             Button("Import Copy…") {
                 selectedImportMode = .managedCopy
                 isImportingPayload = true
@@ -194,13 +202,10 @@ public struct HostShellRootView: View {
     }
 
     private var selectedContainerSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Selected Container")
-                .font(.headline)
+        Section("Selected Container") {
 
             if let container = model.selectedContainer {
                 TextField("Container title", text: $titleDraft)
-                    .textFieldStyle(.roundedBorder)
                     .accessibilityIdentifier("containerTitleField")
 
                 LabeledContent("Storefront", value: label(for: container.storefront))
@@ -229,11 +234,6 @@ public struct HostShellRootView: View {
                     )
                 }
 
-                Divider()
-
-                Text("Runtime Settings")
-                    .font(.subheadline.weight(.semibold))
-
                 Picker("Backend preference", selection: $backendDraft) {
                     ForEach(ExecutionBackend.allCases.filter { $0 != .unsupported }, id: \.self) { backend in
                         Text(label(for: backend)).tag(backend)
@@ -248,92 +248,73 @@ public struct HostShellRootView: View {
                 }
                 .pickerStyle(.menu)
 
-                Stepper("Memory budget: \(memoryBudgetDraft) MB", value: $memoryBudgetDraft, in: 256...4096, step: 128)
+                Stepper("Memory: \(memoryBudgetDraft) MB", value: $memoryBudgetDraft, in: 256...4096, step: 128)
                 Stepper(
-                    "Shader cache budget: \(shaderCacheBudgetDraft) MB",
+                    "Shader cache: \(shaderCacheBudgetDraft) MB",
                     value: $shaderCacheBudgetDraft,
                     in: 32...1024,
                     step: 32
                 )
-                Toggle("Touch overlay enabled", isOn: $touchOverlayDraft)
-                Toggle("Prefer physical controller", isOn: $prefersControllerDraft)
+                Toggle("Touch overlay", isOn: $touchOverlayDraft)
+                Toggle("Prefer controller", isOn: $prefersControllerDraft)
 
-                HStack {
-                    Button("Save Title") {
-                        Task {
-                            await model.renameSelectedContainer(to: titleDraft)
-                        }
+                Button("Save Settings") {
+                    Task {
+                        await model.renameSelectedContainer(to: titleDraft)
+                        await model.saveRuntimeProfile(
+                            backendPreference: backendDraft,
+                            graphicsBackend: graphicsBackendDraft,
+                            touchOverlayEnabled: touchOverlayDraft,
+                            prefersPhysicalController: prefersControllerDraft,
+                            memoryBudgetMB: memoryBudgetDraft,
+                            shaderCacheBudgetMB: shaderCacheBudgetDraft
+                        )
                     }
-                    .buttonStyle(.bordered)
-                    .disabled(model.isBusy || titleDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-
-                    Button("Save Runtime Settings") {
-                        Task {
-                            await model.saveRuntimeProfile(
-                                backendPreference: backendDraft,
-                                graphicsBackend: graphicsBackendDraft,
-                                touchOverlayEnabled: touchOverlayDraft,
-                                prefersPhysicalController: prefersControllerDraft,
-                                memoryBudgetMB: memoryBudgetDraft,
-                                shaderCacheBudgetMB: shaderCacheBudgetDraft
-                            )
-                        }
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .accessibilityIdentifier("saveRuntimeSettingsButton")
-                    .disabled(model.isBusy)
-
-                    Button("Delete Container", role: .destructive) {
-                        Task {
-                            await model.deleteSelectedContainer()
-                        }
-                    }
-                    .buttonStyle(.bordered)
-                    .disabled(model.isBusy)
                 }
-            } else {
-                Text("Select a container to inspect or edit its metadata.")
-                    .foregroundStyle(.secondary)
+                .buttonStyle(.borderedProminent)
+                .accessibilityIdentifier("saveRuntimeSettingsButton")
+                .disabled(model.isBusy)
+
+                Button("Delete Container", role: .destructive) {
+                    Task {
+                        await model.deleteSelectedContainer()
+                    }
+                }
+                .disabled(model.isBusy)
             }
         }
     }
 
     private var planningSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Planning")
-                .font(.headline)
-
+        Section("Planning") {
             if let planningDecision = model.planningDecision {
                 LabeledContent("Backend", value: label(for: planningDecision.backend))
                 LabeledContent("Policy risk", value: label(for: planningDecision.policyRisk))
 
                 if !planningDecision.blockers.isEmpty {
-                    Text("Blockers")
-                        .font(.subheadline.weight(.semibold))
                     ForEach(Array(planningDecision.blockers.enumerated()), id: \.offset) { _, blocker in
-                        Text("• \(blocker)")
+                        Label(blocker, systemImage: "xmark.circle.fill")
+                            .foregroundStyle(.red)
+                            .font(.caption)
                     }
                 }
 
                 if !planningDecision.warnings.isEmpty {
-                    Text("Warnings")
-                        .font(.subheadline.weight(.semibold))
                     ForEach(Array(planningDecision.warnings.enumerated()), id: \.offset) { _, warning in
-                        Text("• \(warning)")
+                        Label(warning, systemImage: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.orange)
+                            .font(.caption)
                     }
                 }
             } else {
-                Text("Select a container to inspect the current planning decision.")
+                Text("No planning decision yet.")
                     .foregroundStyle(.secondary)
             }
         }
     }
 
     private var sessionsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Launch Sessions")
-                .font(.headline)
-
+        Section("Launch Sessions") {
             if model.sessions.isEmpty {
                 Text("No launches recorded yet.")
                     .foregroundStyle(.secondary)
@@ -349,24 +330,17 @@ public struct HostShellRootView: View {
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(10)
-                        .background(
-                            (model.selectedSession?.id == session.id ? Color.accentColor.opacity(0.15) : Color.secondary.opacity(0.08)),
-                            in: RoundedRectangle(cornerRadius: 10)
-                        )
                     }
-                    .buttonStyle(.plain)
+                    .listRowBackground(
+                        model.selectedSession?.id == session.id ? Color.accentColor.opacity(0.15) : nil
+                    )
                 }
             }
         }
     }
 
     private var sessionDetailSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Session Detail")
-                .font(.headline)
-
+        Section("Session Detail") {
             if let session = model.selectedSession {
                 LabeledContent("State", value: label(for: session.state))
                 LabeledContent("Backend", value: label(for: session.backend))
@@ -378,8 +352,6 @@ public struct HostShellRootView: View {
                 }
 
                 if !session.events.isEmpty {
-                    Text("Event Timeline")
-                        .font(.subheadline.weight(.semibold))
                     ForEach(session.events.prefix(8)) { event in
                         VStack(alignment: .leading, spacing: 2) {
                             Text(label(for: event.kind))
@@ -390,9 +362,6 @@ public struct HostShellRootView: View {
                                     .foregroundStyle(.secondary)
                             }
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(8)
-                        .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8))
                     }
                 }
             } else {
@@ -403,10 +372,7 @@ public struct HostShellRootView: View {
     }
 
     private var benchmarkSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Benchmarks")
-                .font(.headline)
-
+        Section("Benchmarks") {
             if model.benchmarkResults.isEmpty {
                 Text("No benchmark captures yet.")
                     .foregroundStyle(.secondary)
@@ -415,49 +381,37 @@ public struct HostShellRootView: View {
                     Button {
                         model.selectBenchmark(id: benchmark.id)
                     } label: {
-                        VStack(alignment: .leading, spacing: 6) {
+                        VStack(alignment: .leading, spacing: 4) {
                             Text("\(label(for: benchmark.backend)) • \(label(for: benchmark.jitMode))")
                                 .font(.subheadline.weight(.semibold))
-                            Text("Recorded \(benchmark.recordedAt.formatted(date: .abbreviated, time: .shortened))")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
                             Text(metricsSummary(for: benchmark.metrics))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(10)
-                        .background(
-                            (model.selectedBenchmark?.id == benchmark.id ? Color.accentColor.opacity(0.15) : Color.secondary.opacity(0.08)),
-                            in: RoundedRectangle(cornerRadius: 10)
-                        )
                     }
-                    .buttonStyle(.plain)
+                    .listRowBackground(
+                        model.selectedBenchmark?.id == benchmark.id ? Color.accentColor.opacity(0.15) : nil
+                    )
                 }
             }
         }
     }
 
     private var benchmarkDetailSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Benchmark Detail")
-                .font(.headline)
-
+        Section("Benchmark Detail") {
             if let benchmark = model.selectedBenchmark {
                 LabeledContent("Backend", value: label(for: benchmark.backend))
                 LabeledContent("JIT", value: label(for: benchmark.jitMode))
                 LabeledContent("Lane", value: label(for: benchmark.productLane))
                 LabeledContent("Content mode", value: benchmark.contentMode.map { label(for: $0) } ?? "Unknown")
-                LabeledContent("Recorded", value: benchmark.recordedAt.formatted(date: .abbreviated, time: .standard))
                 Text(metricsSummary(for: benchmark.metrics))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 if !benchmark.plannerWarnings.isEmpty {
-                    Text("Planner warnings")
-                        .font(.subheadline.weight(.semibold))
                     ForEach(Array(benchmark.plannerWarnings.enumerated()), id: \.offset) { _, warning in
-                        Text("• \(warning)")
+                        Label(warning, systemImage: "exclamationmark.triangle")
                             .font(.caption)
+                            .foregroundStyle(.orange)
                     }
                 }
             } else {
@@ -468,21 +422,14 @@ public struct HostShellRootView: View {
     }
 
     private var logSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Latest Log")
-                .font(.headline)
-            Group {
-                if model.latestLog.isEmpty {
-                    Text("No log output yet.")
-                        .foregroundStyle(.secondary)
-                } else {
-                    Text(model.latestLog)
-                        .font(.system(.caption, design: .monospaced))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(10)
-                        .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
-                        .accessibilityIdentifier("latestLogText")
-                }
+        Section("Latest Log") {
+            if model.latestLog.isEmpty {
+                Text("No log output yet.")
+                    .foregroundStyle(.secondary)
+            } else {
+                Text(model.latestLog)
+                    .font(.system(.caption, design: .monospaced))
+                    .accessibilityIdentifier("latestLogText")
             }
         }
     }

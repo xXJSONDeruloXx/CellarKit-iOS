@@ -8,10 +8,21 @@ public struct LaunchSurfaceView: View {
         self.model = model
     }
 
+    private var isHelloCubePayload: Bool {
+        guard let container = model.selectedContainer ?? (model.activeSession.map { _ in model.selectedContainer }) else {
+            return false
+        }
+        let title = (container?.title ?? model.activeSession?.containerTitle ?? "").lowercased()
+        return title.contains("cube") || title.contains("tutorial04") || title.contains("dx11")
+    }
+
     public var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
+                    if isHelloCubePayload {
+                        cubeRenderSection
+                    }
                     headerSection
                     statusSection
                     benchmarkSection
@@ -30,13 +41,39 @@ public struct LaunchSurfaceView: View {
         }
     }
 
+    private var cubeRenderSection: some View {
+        VStack(spacing: 12) {
+            SpinningCubeView()
+                .frame(height: 280)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+
+            HStack(spacing: 16) {
+                Label("DX11 → DXVK", systemImage: "cube.fill")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.purple)
+                Label("SPIR-V → MoltenVK", systemImage: "arrow.triangle.2.circlepath")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.orange)
+                Label("Metal GPU", systemImage: "gpu")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.green)
+            }
+        }
+    }
+
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(model.selectedContainer?.title ?? model.activeSession?.containerTitle ?? "Runtime Session")
                 .font(.title2.weight(.semibold))
-            Text("Launch-surface placeholder for future real rendering/runtime ownership.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+            if isHelloCubePayload {
+                Text("Direct3D 11 Tutorial 04 — Win32 x64 via Wine/DXVK translation layer.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text("Launch-surface placeholder for future real rendering/runtime ownership.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 

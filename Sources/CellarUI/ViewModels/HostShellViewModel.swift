@@ -147,6 +147,46 @@ public final class HostShellViewModel: ObservableObject {
         }
     }
 
+    public func createHelloCubeContainer() async {
+        isBusy = true
+        defer { isBusy = false }
+
+        capabilitySnapshot = capabilityDetector.detect()
+        let request = GameLaunchRequest(
+            title: "Hello Cube (DX11)",
+            storefront: .localImport,
+            acquisitionMode: .bundledSample,
+            guestArchitecture: .windowsX64,
+            requiresGraphicsTranslation: true,
+            allowsInterpreterFallback: true,
+            allowsDiagnosticVMFallback: false
+        )
+        let contentReference = ImportedContentReference(
+            mode: .bundledSample,
+            pathHint: "Samples/HelloCubeWindows",
+            originalFilename: "Tutorial04.exe"
+        )
+
+        do {
+            let created = try await coordinator.createContainer(
+                request: request,
+                capabilities: capabilitySnapshot.capabilities,
+                productLane: capabilitySnapshot.productLane,
+                contentReference: contentReference,
+                entryExecutableRelativePath: "Debug/Tutorial04.exe"
+            )
+            selectedContainerID = created.descriptor.id
+            planningDecision = created.planningDecision
+            await refresh()
+            statusMessage = "Created Hello Cube (DX11 Win32 sample)."
+            if shouldAutoLaunchAfterCreate {
+                await launchSelectedContainer()
+            }
+        } catch {
+            statusMessage = "Create failed: \(error.localizedDescription)"
+        }
+    }
+
     public func importPayload(
         from sourceURL: URL,
         mode: ImportedContentMode = .managedCopy,
