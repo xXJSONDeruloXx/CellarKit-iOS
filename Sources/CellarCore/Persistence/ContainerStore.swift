@@ -9,16 +9,28 @@ public struct ContainerStore {
         self.fileManager = fileManager
     }
 
+    // MARK: - Private helpers
+
+    /// Returns a plain filesystem path string (no percent-encoding).
+    /// `URL.path()` on iOS 16+ returns a percent-encoded string by default
+    /// (e.g. "Application%20Support"), which `FileManager.fileExists(atPath:)`
+    /// cannot resolve. Always use this helper instead of `url.path()`.
+    private func fsPath(_ url: URL) -> String {
+        url.path(percentEncoded: false)
+    }
+
+    // MARK: - Public API
+
     public func save(_ descriptor: ContainerDescriptor) throws {
         let containerURL = rootURL.appending(path: descriptor.id.uuidString)
-        let metadataURL = metadataURL(for: descriptor.id)
+        let metadataURL  = metadataURL(for: descriptor.id)
 
-        if !fileManager.fileExists(atPath: containerURL.path()) {
+        if !fileManager.fileExists(atPath: fsPath(containerURL)) {
             try fileManager.createDirectory(at: containerURL, withIntermediateDirectories: true)
         }
 
         let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        encoder.outputFormatting    = [.prettyPrinted, .sortedKeys]
         encoder.dateEncodingStrategy = .secondsSince1970
         let data = try encoder.encode(descriptor)
         try data.write(to: metadataURL, options: .atomic)
@@ -26,7 +38,7 @@ public struct ContainerStore {
 
     public func load(id: UUID) throws -> ContainerDescriptor? {
         let metadataURL = metadataURL(for: id)
-        guard fileManager.fileExists(atPath: metadataURL.path()) else {
+        guard fileManager.fileExists(atPath: fsPath(metadataURL)) else {
             return nil
         }
 
@@ -37,7 +49,7 @@ public struct ContainerStore {
     }
 
     public func loadAll() throws -> [ContainerDescriptor] {
-        guard fileManager.fileExists(atPath: rootURL.path()) else {
+        guard fileManager.fileExists(atPath: fsPath(rootURL)) else {
             return []
         }
 
@@ -51,8 +63,10 @@ public struct ContainerStore {
         decoder.dateDecodingStrategy = .secondsSince1970
 
         return try children.compactMap { child in
-            let metadataURL = child.appending(path: "Metadata").appendingPathExtension("json")
-            guard fileManager.fileExists(atPath: metadataURL.path()) else {
+            let metadataURL = child
+                .appending(path: "Metadata")
+                .appendingPathExtension("json")
+            guard fileManager.fileExists(atPath: fsPath(metadataURL)) else {
                 return nil
             }
             let data = try Data(contentsOf: metadataURL)
@@ -61,18 +75,14 @@ public struct ContainerStore {
     }
 
     public func updateLastLaunchedAt(id: UUID, at date: Date) throws {
-        guard var descriptor = try load(id: id) else {
-            return
-        }
+        guard var descriptor = try load(id: id) else { return }
         descriptor.lastLaunchedAt = date
         try save(descriptor)
     }
 
     public func delete(id: UUID) throws {
         let containerURL = rootURL.appending(path: id.uuidString)
-        guard fileManager.fileExists(atPath: containerURL.path()) else {
-            return
-        }
+        guard fileManager.fileExists(atPath: fsPath(containerURL)) else { return }
         try fileManager.removeItem(at: containerURL)
     }
 
