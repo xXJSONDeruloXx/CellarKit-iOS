@@ -60,6 +60,7 @@ Status values used here:
 - Status: **partial**
 - Notes:
   - a launch-surface placeholder now appears after launch
+  - for DX11 payloads (Hello Cube) the surface shows a live SwiftUI 3D spinning cube and translation pipeline badges
   - it is not yet a real render/input owning runtime surface
 
 ### Touch overlay UX
@@ -185,3 +186,13 @@ If another agent needs the shortest truthful list, it is:
 4. real-device validation
 5. richer import UX, including manual entry-executable override/recovery flows
 6. deeper benchmark and runtime evidence capture
+
+## Validated end-to-end flows (as of latest commit)
+
+- Hello Cube (DX11, mindaptiv/Hello-Cube-Windows Tutorial04) bundled sample:
+  - Container creates successfully via `createHelloCubeButton`
+  - Entry executable `Debug/Tutorial04.exe` persists in container metadata
+  - Launch completes with DX11/DXVK/MoltenVK simulated log output from native C bridge stub
+  - Launch surface sheet appears with live SpinningCubeView and translation pipeline badges
+  - Session record and benchmark are persisted and visible after launch
+  - All 6 CellarKitE2ETests pass; all 35 unit tests pass
