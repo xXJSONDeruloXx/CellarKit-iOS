@@ -31,6 +31,37 @@ targets:
     dependencies:
       - package: CellarKitPackage
         product: CellarUI
+    preBuildScripts:
+      - name: "Compile wine-stub"
+        script: |
+          set -e
+          STUB_SRC="${SRCROOT}/../../Resources/WineRuntime/wine-stub.c"
+          BINARIES_DIR="${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Binaries"
+          STUB_OUT="${BINARIES_DIR}/wine-stub"
+          mkdir -p "${BINARIES_DIR}"
+          if [ "${PLATFORM_NAME}" = "iphonesimulator" ]; then
+            # The simulator is a macOS process: posix_spawn() spawns real macOS
+            # children.  Compile wine-stub as a plain macOS ARM64 binary using
+            # the host clang so it can be execv'd directly without needing the
+            # iOS sim dyld shims.
+            /usr/bin/clang \
+              -arch arm64 \
+              -target arm64-apple-macos14.0 \
+              -O2 \
+              -o "${STUB_OUT}" "${STUB_SRC}"
+          else
+            # Device: compile for iOS ARM64.  Needs proper codesigning later.
+            xcrun --sdk iphoneos clang \
+              -arch arm64 \
+              -target arm64-apple-ios18.0 \
+              -O2 \
+              -o "${STUB_OUT}" "${STUB_SRC}"
+          fi
+          echo "wine-stub compiled → ${STUB_OUT}"
+        inputFiles:
+          - ${SRCROOT}/../../Resources/WineRuntime/wine-stub.c
+        outputFiles:
+          - ${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Binaries/wine-stub
   CellarAppUITests:
     type: bundle.ui-testing
     platform: iOS

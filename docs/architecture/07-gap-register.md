@@ -126,10 +126,14 @@ Status values used here:
 - Status: **implemented**
 
 ### Native bridge stub
-- Status: **implemented**
+- Status: **partial** (Stage 1 complete — real process execution, Wine binary not yet embedded)
 - Notes:
-  - C-backed callback bridge exists
-  - launch configuration translation exists
+  - C-backed callback bridge with posix_spawn + live pipe capture exists
+  - `wine-stub` placeholder binary compiled by Xcode build phase, bundled in `Binaries/`
+  - Bridge copies stub to writable tmp directory and sets executable bit before spawning
+  - Real stdout/stderr captured line-by-line and surfaced as LOG events
+  - When `runtime_binary_path` is nil (no binary found), falls back to legacy simulated events
+  - Stage 2: replace wine-stub with real Wine for macOS ARM64 (simulator) and iOS ARM64 (device)
 
 ### Launch target metadata and bootstrap validation
 - Status: **partial**
@@ -197,6 +201,9 @@ If another agent needs the shortest truthful list, it is:
   - Session record and benchmark are persisted and visible after launch
   - All 6 `CellarKitE2ETests` pass; all 35 unit tests pass
   - `CellarDemoTest.testShowSpinningCubeLive` passes end-to-end (57 s including 45 s hold)
+  - **Stage 1 bridge shipped**: real `posix_spawn` + pipe capture; `wine-stub` binary compiled
+    by Xcode build phase and bundled in `CellarApp.app/Binaries/`; 31 real log lines captured
+    from child process stdout and stored in session record
 
 ## Test environment notes
 

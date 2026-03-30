@@ -12,6 +12,9 @@ public struct RuntimeLaunchConfiguration: Equatable, Sendable {
     public var contentPath: String?
     public var entryExecutableRelativePath: String?
     public var resolvedExecutablePath: String?
+    /// Absolute path to the Wine binary (or wine-stub) to posix_spawn.
+    /// Nil means fall back to legacy simulated events.
+    public var runtimeBinaryPath: String?
     public var bookmarkIdentifier: String?
     public var memoryBudgetMB: Int
     public var shaderCacheBudgetMB: Int
@@ -27,6 +30,7 @@ public struct RuntimeLaunchConfiguration: Equatable, Sendable {
         contentPath: String?,
         entryExecutableRelativePath: String? = nil,
         resolvedExecutablePath: String? = nil,
+        runtimeBinaryPath: String? = nil,
         bookmarkIdentifier: String?,
         memoryBudgetMB: Int,
         shaderCacheBudgetMB: Int
@@ -41,6 +45,7 @@ public struct RuntimeLaunchConfiguration: Equatable, Sendable {
         self.contentPath = contentPath
         self.entryExecutableRelativePath = entryExecutableRelativePath
         self.resolvedExecutablePath = resolvedExecutablePath
+        self.runtimeBinaryPath = runtimeBinaryPath
         self.bookmarkIdentifier = bookmarkIdentifier
         self.memoryBudgetMB = memoryBudgetMB
         self.shaderCacheBudgetMB = shaderCacheBudgetMB
@@ -73,10 +78,47 @@ public struct RuntimeLaunchConfigurationFactory: Sendable {
                 contentPath: contentPath,
                 entryExecutableRelativePath: entryExecutableRelativePath
             ),
+            runtimeBinaryPath: resolveRuntimeBinaryPath(),
             bookmarkIdentifier: container.contentReference?.bookmarkIdentifier,
             memoryBudgetMB: container.runtimeProfile.memoryBudgetMB,
             shaderCacheBudgetMB: container.runtimeProfile.shaderCacheBudgetMB
         )
+    }
+
+    /// Looks for `wine-stub` (or eventually `wine`) inside the app bundle.
+    ///
+    /// `xcrun simctl install` strips the executable bit from non-main binaries,
+    /// so we copy the binary to the writable tmp directory and chmod it before
+    /// handing the path to the C bridge for posix_spawn.
+    /// Returns nil if not found — bridge falls back to legacy simulated events.
+    private func resolveRuntimeBinaryPath() -> String? {
+        let fm = FileManager.default
+
+        // Find the binary in the bundle.
+        let bundlePath = Bundle.main.bundlePath
+        let inBundle = (bundlePath as NSString).appendingPathComponent("Binaries/wine-stub")
+        let source: String
+        if fm.fileExists(atPath: inBundle) {
+            source = inBundle
+        } else if let fallback = Bundle.main.path(forResource: "wine-stub", ofType: nil),
+                  fm.fileExists(atPath: fallback) {
+            source = fallback
+        } else {
+            return nil
+        }
+
+        // Copy to a writable location and set the executable bit.
+        // (simctl install strips the +x bit from non-main bundle executables.)
+        let dest = (NSTemporaryDirectory() as NSString).appendingPathComponent("wine-stub")
+        do {
+            if fm.fileExists(atPath: dest) { try fm.removeItem(atPath: dest) }
+            try fm.copyItem(atPath: source, toPath: dest)
+            try fm.setAttributes([.posixPermissions: 0o755], ofItemAtPath: dest)
+            return dest
+        } catch {
+            // If we can't copy, try the bundle path directly (might still work)
+            return source
+        }
     }
 
     private func resolveExecutablePath(

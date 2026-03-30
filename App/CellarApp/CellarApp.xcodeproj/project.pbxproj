@@ -107,6 +107,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B4A7212B27CD61B4CCA8DFF0 /* Build configuration list for PBXNativeTarget "CellarApp" */;
 			buildPhases = (
+				C642E16FF2C07E5D4429D449 /* Compile wine-stub */,
 				23D694818FFBFEAA693C65EA /* Sources */,
 				C51553903D77C11B679C1AEB /* Resources */,
 				6F76F85503186A8CD3208A7F /* Frameworks */,
@@ -194,6 +195,29 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		C642E16FF2C07E5D4429D449 /* Compile wine-stub */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${SRCROOT}/../../Resources/WineRuntime/wine-stub.c",
+			);
+			name = "Compile wine-stub";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Binaries/wine-stub",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\nSTUB_SRC=\"${SRCROOT}/../../Resources/WineRuntime/wine-stub.c\"\nBINARIES_DIR=\"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Binaries\"\nSTUB_OUT=\"${BINARIES_DIR}/wine-stub\"\nmkdir -p \"${BINARIES_DIR}\"\nif [ \"${PLATFORM_NAME}\" = \"iphonesimulator\" ]; then\n  # The simulator is a macOS process: posix_spawn() spawns real macOS\n  # children.  Compile wine-stub as a plain macOS ARM64 binary using\n  # the host clang so it can be execv'd directly without needing the\n  # iOS sim dyld shims.\n  /usr/bin/clang \\\n    -arch arm64 \\\n    -target arm64-apple-macos14.0 \\\n    -O2 \\\n    -o \"${STUB_OUT}\" \"${STUB_SRC}\"\nelse\n  # Device: compile for iOS ARM64.  Needs proper codesigning later.\n  xcrun --sdk iphoneos clang \\\n    -arch arm64 \\\n    -target arm64-apple-ios18.0 \\\n    -O2 \\\n    -o \"${STUB_OUT}\" \"${STUB_SRC}\"\nfi\necho \"wine-stub compiled → ${STUB_OUT}\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		23D694818FFBFEAA693C65EA /* Sources */ = {

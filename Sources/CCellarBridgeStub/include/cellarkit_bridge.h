@@ -29,6 +29,9 @@ typedef struct {
     const char *content_path;
     const char *entry_executable_relative_path;
     const char *resolved_executable_path;
+    /* Path to the Wine binary (or wine-stub placeholder) to posix_spawn.
+       NULL / empty string → fall back to legacy simulated events. */
+    const char *runtime_binary_path;
     int32_t memory_budget_mb;
     int32_t shader_cache_budget_mb;
     int32_t has_bookmark;
