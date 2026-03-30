@@ -14,12 +14,12 @@ PROJECT=/Users/dhimebauch/Developer/personal/CellarKit-iOS
 DERIVED=/Users/dhimebauch/Library/Developer/Xcode/DerivedData/CellarApp-glpoqhpowaczbpevwwkollbexjag/Build/Products/Debug-iphonesimulator/CellarApp.app
 
 ## Checklist
-- [ ] XCTest UI test passes: createHelloCubeButton found, tapped, container created (status message confirmed)
-- [ ] XCTest UI test passes: container row appears in list after create
-- [ ] XCTest UI test passes: Launch Selected fires, session state = exitedCleanly
-- [ ] XCTest UI test passes: launchSurfaceLogText contains DX11 DXVK log lines
-- [ ] All tests pass (swift test + UI tests)
-- [ ] Clean build, reinstall, relaunch — app is fresh on simulator
+- [x] XCTest UI test passes: createHelloCubeButton found, tapped, container created (status message confirmed)
+- [x] XCTest UI test passes: container row appears in list after create
+- [x] XCTest UI test passes: Launch Selected fires, session state = exitedCleanly
+- [x] XCTest UI test passes: launchSurfaceLogText contains DX11 DXVK log lines
+- [x] All tests pass (swift test 35 unit + 6 E2E UI tests all green)
+- [x] Clean build, reinstall, relaunch — app is fresh on simulator
 
 ## Rules
 - Write/update XCTest UI tests to verify each step

@@ -104,7 +104,7 @@ public struct RuntimeLaunchConfigurationFactory: Sendable {
             ),
             runtimeBinaryPath: runtime.binaryPath,
             runtimeIsWine: runtime.isWine,
-            winePrefixPath: runtime.isWine ? resolveWinePrefix() : nil,
+            winePrefixPath: runtime.isWine ? resolveWinePrefix(containerID: container.id) : nil,
             wineDebug: runtime.isWine ? "-all" : nil,
             bookmarkIdentifier: container.contentReference?.bookmarkIdentifier,
             memoryBudgetMB: container.runtimeProfile.memoryBudgetMB,
@@ -181,22 +181,38 @@ public struct RuntimeLaunchConfigurationFactory: Sendable {
         }
     }
 
-    /// Returns a writable WINEPREFIX path inside the app's Library directory.
-    /// Wine will create it on first launch.
-    private func resolveWinePrefix() -> String? {
-        guard let library = FileManager.default
-            .urls(for: .libraryDirectory, in: .userDomainMask).first
-        else { return nil }
+    /// Returns a per-container writable WINEPREFIX path.
+    ///
+    /// Path: `/private/tmp/cellarkit-wine/<uuid8>`
+    ///
+    /// Why `/private/tmp` instead of the app's Library:
+    /// - Wineserver creates a Unix socket inside WINEPREFIX; macOS limits
+    ///   the socket path to 104 chars, but the simulator Library path is
+    ///   ~220 chars (harmless with CrossOver's Mach port sync; but better
+    ///   to keep it short for future compatibility).
+    /// - `/private/tmp` is world-writable and always accessible from the
+    ///   macOS child process (wine64) spawned by `posix_spawn`.
+    ///
+    /// Per-container isolation: the first 8 hex chars of the UUID give a
+    /// collision-resistant short directory name (`< 10^9` probability at
+    /// typical session counts).
+    private func resolveWinePrefix(containerID: UUID) -> String? {
+        // Allow test/CI override via env var (so pre-warmed wineserver is reused).
+        if let override = ProcessInfo.processInfo.environment["CELLARKIT_WINEPREFIX_OVERRIDE"],
+           !override.isEmpty {
+            try? FileManager.default.createDirectory(
+                atPath: override, withIntermediateDirectories: true)
+            return override
+        }
 
-        let prefix = library
-            .appendingPathComponent("CellarKit")
-            .appendingPathComponent("WinePrefix")
-        // Ensure the parent directory exists (Wine creates WinePrefix itself)
+        // Per-container path: short so wineserver's Unix socket stays < 104 chars.
+        let shortID = containerID.uuidString
+            .replacingOccurrences(of: "-", with: "")
+            .prefix(8).lowercased()
+        let prefixDir = URL(fileURLWithPath: "/private/tmp/cellarkit-wine/\(shortID)")
         try? FileManager.default.createDirectory(
-            at: library.appendingPathComponent("CellarKit"),
-            withIntermediateDirectories: true
-        )
-        return prefix.path(percentEncoded: false)
+            at: prefixDir, withIntermediateDirectories: true)
+        return prefixDir.path(percentEncoded: false)
     }
 
     // MARK: - Executable resolution

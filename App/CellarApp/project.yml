@@ -74,6 +74,18 @@ targets:
           - ${SRCROOT}/../../Resources/TestPayloads/hello-win32.exe
         outputFiles:
           - ${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Payloads/hello-win32.exe
+      - name: "Bundle D3D11 probe"
+        script: |
+          set -e
+          PAYLOADS_DIR="${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Payloads"
+          mkdir -p "${PAYLOADS_DIR}"
+          cp -f "${SRCROOT}/../../Resources/TestPayloads/hello-d3d11-probe.exe" \
+            "${PAYLOADS_DIR}/hello-d3d11-probe.exe"
+          echo "Bundled hello-d3d11-probe.exe → ${PAYLOADS_DIR}/"
+        inputFiles:
+          - ${SRCROOT}/../../Resources/TestPayloads/hello-d3d11-probe.exe
+        outputFiles:
+          - ${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Payloads/hello-d3d11-probe.exe
   CellarAppUITests:
     type: bundle.ui-testing
     platform: iOS

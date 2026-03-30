@@ -1,14 +1,13 @@
 {
-  "name": "cellarkit-e2e",
-  "taskFile": ".ralph/cellarkit-e2e.md",
+  "name": "cellarkit-tier1",
+  "taskFile": ".ralph/cellarkit-tier1.md",
   "iteration": 1,
-  "maxIterations": 25,
+  "maxIterations": 50,
   "itemsPerIteration": 0,
-  "reflectEvery": 5,
+  "reflectEvery": 0,
   "reflectInstructions": "REFLECTION CHECKPOINT\n\nPause and reflect on your progress:\n1. What has been accomplished so far?\n2. What's working well?\n3. What's not working or blocking progress?\n4. Should the approach be adjusted?\n5. What are the next priorities?\n\nUpdate the task file with your reflection, then continue working.",
-  "active": false,
-  "status": "completed",
-  "startedAt": "2026-03-30T15:06:44.019Z",
-  "lastReflectionAt": 0,
-  "completedAt": "2026-03-30T15:23:53.436Z"
+  "active": true,
+  "status": "active",
+  "startedAt": "2026-03-30T17:52:54.109Z",
+  "lastReflectionAt": 0
 }

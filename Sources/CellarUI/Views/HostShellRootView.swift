@@ -174,6 +174,16 @@ public struct HostShellRootView: View {
             .accessibilityIdentifier("createHelloCubeButton")
             .disabled(model.isBusy)
 
+            Button("🔬 D3D11 Probe") {
+                Task {
+                    await model.createD3D11ProbeContainer()
+                }
+            }
+            .buttonStyle(.bordered)
+            .tint(.green)
+            .accessibilityIdentifier("createD3D11ProbeButton")
+            .disabled(model.isBusy)
+
             Button("🍷 Hello Win32") {
                 Task {
                     await model.createHelloWin32Container()

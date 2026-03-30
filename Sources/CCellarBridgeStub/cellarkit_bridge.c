@@ -16,6 +16,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <spawn.h>
+#include <sys/select.h>
 #include <sys/wait.h>
 
 extern char **environ;
@@ -179,14 +180,15 @@ static int run_process(
     emit(context, callback, CELLARKIT_BRIDGE_EVENT_STARTED, "process started", 0);
 
     /*
-     * Read stdout line-by-line, emit each as a LOG event.
-     * We do a simple round-robin between stdout and stderr by opening
-     * both as FILE* and reading stdout first (Wine sends everything to
-     * stdout in our stub; real Wine also uses stdout for debug output).
+     * Drain stdout first (blocking until EOF), then stderr.
+     * Both streams are line-buffered; stderr lines go through a noise filter.
+     * Note: this sequential approach is safe because Wine's useful output
+     * fits in the kernel pipe buffer (64 KB), and wineserver writes to its
+     * OWN stderr descriptor which was dup'd from our pipe write end, so we
+     * drain it cleanly after wine64 exits.
      */
     FILE *fout = fdopen(out_pipe[0], "r");
     FILE *ferr = fdopen(err_pipe[0], "r");
-
     char line[4096];
 
     /* Drain stdout */
@@ -201,15 +203,39 @@ static int run_process(
         close(out_pipe[0]);
     }
 
-    /* Drain stderr (tagged so the UI can distinguish it) */
+    /* Drain stderr with noise filter */
     if (ferr) {
         while (fgets(line, sizeof(line), ferr)) {
             chomp(line);
-            if (line[0] != '\0') {
-                char tagged[4160];
-                snprintf(tagged, sizeof(tagged), "[stderr] %s", line);
-                emit(context, callback, CELLARKIT_BRIDGE_EVENT_LOG, tagged, 0);
+            if (!line[0]) continue;
+
+            /* ── stderr noise filter ─────────────────────────────── */
+            /* Drop fixme: lines (extremely noisy in Wine) */
+            if (strncmp(line, "fixme:", 6) == 0) continue;
+            /* Drop wineserver infrastructure chatter */
+            if (strncmp(line, "wineserver: using ", 18) == 0) continue;
+            if (strncmp(line, "wineserver: starting", 20) == 0) continue;
+            /* Drop MoltenVK verbose listing */
+            if (strncmp(line, "[mvk-",  5) == 0) continue;
+            if (line[0] == '\t' && line[1] == '\t') continue;
+            /* Prefix-creation notice — emit as quiet info log */
+            if (strncmp(line, "wine: created the configuration", 31) == 0) {
+                emit(context, callback, CELLARKIT_BRIDGE_EVENT_LOG,
+                     "[wine] initialising new Wine prefix", 0);
+                continue;
             }
+            if (strncmp(line, "wine: configuration in", 22) == 0) continue;
+
+            /* Keep errors and failures visibly tagged */
+            char tagged[4200];
+            if (strncmp(line, "err:",   4) == 0 ||
+                strncmp(line, "wine: failed", 12) == 0 ||
+                strncmp(line, "wine: cannot", 12) == 0) {
+                snprintf(tagged, sizeof(tagged), "[wine-err] %s", line);
+            } else {
+                snprintf(tagged, sizeof(tagged), "[stderr] %s", line);
+            }
+            emit(context, callback, CELLARKIT_BRIDGE_EVENT_LOG, tagged, 0);
         }
         fclose(ferr);
     } else {
@@ -314,6 +340,19 @@ void cellarkit_bridge_run(
 
         if (config.runtime_is_wine) {
             /* ── Real Wine: argv = [wine64, exe_path] ─────────────────── */
+            /* Emit diagnostics so the log surface shows the paths used. */
+            {
+                char diag[2048];
+                snprintf(diag, sizeof(diag),
+                    "[bridge] wine64=%s exe=%s prefix=%s home=%s tmpdir=%s uid=%d",
+                    config.runtime_binary_path ? config.runtime_binary_path : "<nil>",
+                    exe_arg,
+                    config.wineprefix_path ? config.wineprefix_path : "<nil>",
+                    getenv("HOME") ? getenv("HOME") : "<nil>",
+                    getenv("TMPDIR") ? getenv("TMPDIR") : "<nil>",
+                    (int)getuid());
+                emit(context, callback, CELLARKIT_BRIDGE_EVENT_LOG, diag, 0);
+            }
             char *argv[] = {
                 (char *)config.runtime_binary_path,
                 (char *)exe_arg,

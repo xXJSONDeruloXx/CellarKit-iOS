@@ -237,6 +237,55 @@ public final class HostShellViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Stage 3: D3D11 probe preset
+
+    /// Creates a container for the bundled D3D11 capability probe.
+    /// Tries HARDWARE (wined3d/DXVK), falls back to WARP automatically.
+    /// Proves the D3D11 → wined3d/DXVK → Vulkan → MoltenVK → Metal chain.
+    public func createD3D11ProbeContainer() async {
+        isBusy = true
+        defer { isBusy = false }
+
+        capabilitySnapshot = capabilityDetector.detect()
+
+        let exePath = Bundle.main.bundlePath
+            .appending("/Payloads/hello-d3d11-probe.exe")
+
+        let request = GameLaunchRequest(
+            title: "D3D11 Probe",
+            storefront: .localImport,
+            acquisitionMode: .bundledSample,
+            guestArchitecture: .windowsX64,
+            requiresGraphicsTranslation: true,
+            allowsInterpreterFallback: true,
+            allowsDiagnosticVMFallback: false
+        )
+        let contentReference = ImportedContentReference(
+            mode: .bundledSample,
+            pathHint: exePath,
+            originalFilename: "hello-d3d11-probe.exe"
+        )
+
+        do {
+            let created = try await coordinator.createContainer(
+                request: request,
+                capabilities: capabilitySnapshot.capabilities,
+                productLane: capabilitySnapshot.productLane,
+                contentReference: contentReference,
+                entryExecutableRelativePath: nil
+            )
+            selectedContainerID = created.descriptor.id
+            planningDecision = created.planningDecision
+            await refresh()
+            statusMessage = "Created D3D11 Probe (Stage-3 graphics chain test)."
+            if shouldAutoLaunchAfterCreate {
+                await launchSelectedContainer()
+            }
+        } catch {
+            statusMessage = "Create failed: \(error.localizedDescription)"
+        }
+    }
+
     public func importPayload(
         from sourceURL: URL,
         mode: ImportedContentMode = .managedCopy,
