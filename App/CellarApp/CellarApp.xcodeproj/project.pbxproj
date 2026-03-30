@@ -11,12 +11,20 @@
 		06CBE975725A1A93D45C75EE /* CellarUI in Frameworks */ = {isa = PBXBuildFile; productRef = A0CB9AE590FA6D7E374E6737 /* CellarUI */; };
 		1AEDFB4CD0954E07047EDB6C /* CellarKitE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 251A152EBA1C89AEB57875E8 /* CellarKitE2ETests.swift */; };
 		1E5B1DC7C4740E9BE0374DC7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB39F6D06FFEB609DCF2AA18 /* Assets.xcassets */; };
+		439F40FB5376EC2FF1DAEF06 /* libwineserver.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 11A57F843EA714489DE3BEB7 /* libwineserver.a */; };
 		52CAA2E39FEEBC607BD7F283 /* CellarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB2F975FBD6D89D4DB439BC2 /* CellarApp.swift */; };
 		5C93CEDC6D0C1A6EF60C2D91 /* CellarAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22051CA68177F163F98AC2CF /* CellarAppUITests.swift */; };
+		9CE69020E92FBEA045A89B06 /* WineProcessBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = B3EC409A61595BC8AAFBF6EF /* WineProcessBridge.m */; };
 		A1485E30AE76188AFDC386FD /* D3D11ProbeTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3D4E3257A984384DA7D6761 /* D3D11ProbeTest.swift */; };
 		A8AFA61AA94EC7B6879E1B11 /* CellarQuickTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5960DF17CF997459E9C60B6 /* CellarQuickTest.swift */; };
+		B89F5DB525507969E0E3E812 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0314E15778B7C8DBB36BD0FB /* IOKit.framework */; };
 		C380189602FE055C46DC7DF2 /* CellarDemoTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FD0F139AA6153B3D580293F /* CellarDemoTest.swift */; };
+		C3C5AD4046535A470D0AAAC4 /* WineServerBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 46192481B09D59BDF2602C52 /* WineServerBridge.m */; };
+		C80063368F04EFD5B43E9459 /* WineStubs.c in Sources */ = {isa = PBXBuildFile; fileRef = A07288EE15B9F7826C6A1244 /* WineStubs.c */; };
 		CC4717E690574988B0F14562 /* CellarDiagnosticTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01E8CEC9E467F196388EB4CA /* CellarDiagnosticTest.swift */; };
+		CDDA46AF0313279F6F1ED98F /* cellarkit_wine_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = 83326BF6DCDDC2625AFE7A64 /* cellarkit_wine_ios.m */; };
+		E160FEAA9ADF479DE8B16E68 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 090E2A3FD976EBE994A75833 /* CoreFoundation.framework */; };
+		F686E094EEA6A51C9037135C /* libntdll_unix.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 782E0368B963B0683FC53D86 /* libntdll_unix.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -31,15 +39,26 @@
 
 /* Begin PBXFileReference section */
 		01E8CEC9E467F196388EB4CA /* CellarDiagnosticTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellarDiagnosticTest.swift; sourceTree = "<group>"; };
+		0314E15778B7C8DBB36BD0FB /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		04BFCFDE459E6BAA2A98FB39 /* WineServerBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WineServerBridge.h; sourceTree = "<group>"; };
+		090E2A3FD976EBE994A75833 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		11A57F843EA714489DE3BEB7 /* libwineserver.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libwineserver.a; path = Libraries/libwineserver.a; sourceTree = "<group>"; };
 		22051CA68177F163F98AC2CF /* CellarAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellarAppUITests.swift; sourceTree = "<group>"; };
 		251A152EBA1C89AEB57875E8 /* CellarKitE2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellarKitE2ETests.swift; sourceTree = "<group>"; };
 		3FD0F139AA6153B3D580293F /* CellarDemoTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellarDemoTest.swift; sourceTree = "<group>"; };
+		46192481B09D59BDF2602C52 /* WineServerBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WineServerBridge.m; sourceTree = "<group>"; };
+		5BE3B4CB11E716A8309B4842 /* WineProcessBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WineProcessBridge.h; sourceTree = "<group>"; };
 		63CB89D66AB3DBE0491E7F73 /* CellarWine2Test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellarWine2Test.swift; sourceTree = "<group>"; };
 		6515FDFF39FF412F6990F0B4 /* CellarApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = CellarApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6738DA6622C45FDBFC40FE15 /* CellarAppUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CellarAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		782E0368B963B0683FC53D86 /* libntdll_unix.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libntdll_unix.a; path = Libraries/libntdll_unix.a; sourceTree = "<group>"; };
+		83326BF6DCDDC2625AFE7A64 /* cellarkit_wine_ios.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = cellarkit_wine_ios.m; sourceTree = "<group>"; };
 		9319E04B913AB0203A8B0ACA /* CellarKit-iOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "CellarKit-iOS"; path = ../..; sourceTree = SOURCE_ROOT; };
+		A07288EE15B9F7826C6A1244 /* WineStubs.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = WineStubs.c; sourceTree = "<group>"; };
 		B3D4E3257A984384DA7D6761 /* D3D11ProbeTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = D3D11ProbeTest.swift; sourceTree = "<group>"; };
+		B3EC409A61595BC8AAFBF6EF /* WineProcessBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WineProcessBridge.m; sourceTree = "<group>"; };
 		B5960DF17CF997459E9C60B6 /* CellarQuickTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellarQuickTest.swift; sourceTree = "<group>"; };
+		B7977812333E4D035524AD97 /* CellarApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CellarApp.entitlements; sourceTree = "<group>"; };
 		BB39F6D06FFEB609DCF2AA18 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DB2F975FBD6D89D4DB439BC2 /* CellarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellarApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -50,12 +69,27 @@
 			buildActionMask = 2147483647;
 			files = (
 				06CBE975725A1A93D45C75EE /* CellarUI in Frameworks */,
+				F686E094EEA6A51C9037135C /* libntdll_unix.a in Frameworks */,
+				439F40FB5376EC2FF1DAEF06 /* libwineserver.a in Frameworks */,
+				B89F5DB525507969E0E3E812 /* IOKit.framework in Frameworks */,
+				E160FEAA9ADF479DE8B16E68 /* CoreFoundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2376C324C0F0512E615ECC00 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				090E2A3FD976EBE994A75833 /* CoreFoundation.framework */,
+				0314E15778B7C8DBB36BD0FB /* IOKit.framework */,
+				782E0368B963B0683FC53D86 /* libntdll_unix.a */,
+				11A57F843EA714489DE3BEB7 /* libwineserver.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		57C364AE3F85420ED5A2A39F /* Packages */ = {
 			isa = PBXGroup;
 			children = (
@@ -70,6 +104,7 @@
 				B84DE881AF74BCBF6A2E0898 /* CellarApp */,
 				C7A77663D209E1B76B890665 /* CellarAppUITests */,
 				57C364AE3F85420ED5A2A39F /* Packages */,
+				2376C324C0F0512E615ECC00 /* Frameworks */,
 				F05970E63E8A42B5F343E301 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -78,7 +113,9 @@
 			isa = PBXGroup;
 			children = (
 				BB39F6D06FFEB609DCF2AA18 /* Assets.xcassets */,
+				B7977812333E4D035524AD97 /* CellarApp.entitlements */,
 				DB2F975FBD6D89D4DB439BC2 /* CellarApp.swift */,
+				FCB378BDE72EA78C7A48A731 /* WineRuntime */,
 			);
 			path = CellarApp;
 			sourceTree = "<group>";
@@ -106,6 +143,19 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		FCB378BDE72EA78C7A48A731 /* WineRuntime */ = {
+			isa = PBXGroup;
+			children = (
+				83326BF6DCDDC2625AFE7A64 /* cellarkit_wine_ios.m */,
+				5BE3B4CB11E716A8309B4842 /* WineProcessBridge.h */,
+				B3EC409A61595BC8AAFBF6EF /* WineProcessBridge.m */,
+				04BFCFDE459E6BAA2A98FB39 /* WineServerBridge.h */,
+				46192481B09D59BDF2602C52 /* WineServerBridge.m */,
+				A07288EE15B9F7826C6A1244 /* WineStubs.c */,
+			);
+			path = WineRuntime;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -116,6 +166,8 @@
 				C642E16FF2C07E5D4429D449 /* Compile wine-stub */,
 				A11526A126C2A94E54331DE6 /* Bundle test payloads */,
 				7176A0DBDAB0804BC88079CD /* Bundle D3D11 probe */,
+				9171FB5109267ED325C90401 /* Bundle ARM64 Windows payload */,
+				19A820CC990EE08C81F27FAC /* Bundle ARM64 Windows DLLs */,
 				23D694818FFBFEAA693C65EA /* Sources */,
 				C51553903D77C11B679C1AEB /* Resources */,
 				6F76F85503186A8CD3208A7F /* Frameworks */,
@@ -205,6 +257,24 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		19A820CC990EE08C81F27FAC /* Bundle ARM64 Windows DLLs */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Bundle ARM64 Windows DLLs";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\nDLLS_DIR=\"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/aarch64-windows\"\nmkdir -p \"${DLLS_DIR}\"\ncp -f \"${SRCROOT}/../../Resources/WineRuntime/ARM64DLLs/\"* \"${DLLS_DIR}/\"\necho \"Bundled $(ls ${DLLS_DIR} | wc -l | tr -d ' ') ARM64 Windows DLLs\"\n";
+		};
 		7176A0DBDAB0804BC88079CD /* Bundle D3D11 probe */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -224,6 +294,26 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "set -e\nPAYLOADS_DIR=\"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Payloads\"\nmkdir -p \"${PAYLOADS_DIR}\"\ncp -f \"${SRCROOT}/../../Resources/TestPayloads/hello-d3d11-probe.exe\" \\\n  \"${PAYLOADS_DIR}/hello-d3d11-probe.exe\"\necho \"Bundled hello-d3d11-probe.exe → ${PAYLOADS_DIR}/\"\n";
+		};
+		9171FB5109267ED325C90401 /* Bundle ARM64 Windows payload */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${SRCROOT}/../../Resources/TestPayloads/hello-win32-arm64.exe",
+			);
+			name = "Bundle ARM64 Windows payload";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Payloads/hello-win32-arm64.exe",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\nPAYLOADS_DIR=\"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Payloads\"\nmkdir -p \"${PAYLOADS_DIR}\"\ncp -f \"${SRCROOT}/../../Resources/TestPayloads/hello-win32-arm64.exe\" \\\n  \"${PAYLOADS_DIR}/hello-win32-arm64.exe\"\necho \"Bundled hello-win32-arm64.exe → ${PAYLOADS_DIR}/\"\n";
 		};
 		A11526A126C2A94E54331DE6 /* Bundle test payloads */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -273,6 +363,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				52CAA2E39FEEBC607BD7F283 /* CellarApp.swift in Sources */,
+				9CE69020E92FBEA045A89B06 /* WineProcessBridge.m in Sources */,
+				C3C5AD4046535A470D0AAAC4 /* WineServerBridge.m in Sources */,
+				C80063368F04EFD5B43E9459 /* WineStubs.c in Sources */,
+				CDDA46AF0313279F6F1ED98F /* cellarkit_wine_ios.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -305,8 +399,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = CellarApp/CellarApp.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"Libraries\"",
+				);
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/../../Sources/CCellarBridgeStub/include $(SRCROOT)/CellarApp/WineRuntime";
 				INFOPLIST_KEY_CFBundleDisplayName = CellarKit;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -315,6 +415,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/Libraries";
+				OTHER_LDFLAGS = "-lntdll_unix -lwineserver -lc++";
 				PRODUCT_BUNDLE_IDENTIFIER = com.cellarkit.ios.app;
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;
@@ -467,8 +569,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = CellarApp/CellarApp.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"Libraries\"",
+				);
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/../../Sources/CCellarBridgeStub/include $(SRCROOT)/CellarApp/WineRuntime";
 				INFOPLIST_KEY_CFBundleDisplayName = CellarKit;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -477,6 +585,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/Libraries";
+				OTHER_LDFLAGS = "-lntdll_unix -lwineserver -lc++";
 				PRODUCT_BUNDLE_IDENTIFIER = com.cellarkit.ios.app;
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = NO;

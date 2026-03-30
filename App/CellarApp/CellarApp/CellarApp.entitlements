@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Required for FEX-Emu x86→ARM64 JIT translation (future) -->
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+    <!-- Allow debugger attach (enables JIT via StikDebug/StikJIT) -->
+    <key>get-task-allow</key>
+    <true/>
+    <!-- Larger memory headroom for Wine prefix + DLL loading -->
+    <key>com.apple.developer.kernel.increased-memory-limit</key>
+    <true/>
+</dict>
+</plist>

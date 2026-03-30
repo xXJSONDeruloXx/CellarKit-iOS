@@ -10,6 +10,9 @@
  */
 
 #include "cellarkit_bridge.h"
+#if TARGET_OS_IOS && !TARGET_OS_SIMULATOR
+#include "cellarkit_wine_ios.h"
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,6 +41,19 @@ static void chomp(char *s) {
 
 static int str_contains(const char *haystack, const char *needle) {
     return haystack && needle && strstr(haystack, needle) != NULL;
+}
+
+/* ── Wine iOS log relay (used on physical device) ─────────────────
+ * Defined at file scope so it's visible everywhere in this TU.     */
+typedef struct {
+    void                    *ctx;
+    cellarkit_bridge_callback cb;
+} wine_log_relay_t;
+
+static void wine_ios_log_relay(void *r, const char *line) {
+    wine_log_relay_t *rel = (wine_log_relay_t *)r;
+    if (rel->cb && line)
+        rel->cb(rel->ctx, CELLARKIT_BRIDGE_EVENT_LOG, line, 0);
 }
 
 static int is_bundled_sample(const char *mode) {
@@ -252,14 +268,38 @@ static void emit_simulated_events(
 
     emit(context, callback, CELLARKIT_BRIDGE_EVENT_STARTED, "process started", 0);
 
-/* TARGET_OS_IOS && !TARGET_OS_SIMULATOR = physical iPhone/iPad only.
- * This guard avoids emitting device notices during macOS unit tests
- * (swift test) where TARGET_OS_SIMULATOR is also 0. */
+/* Real device: if we have the Wine iOS runtime, run it in-process.
+ * Falls through to simulation if the runtime is unavailable. */
 #if TARGET_OS_IOS && !TARGET_OS_SIMULATOR
+    // Only attempt real Wine if a prefix path and exe are configured.
+    if (config.wineprefix_path && config.wineprefix_path[0] != '\0'
+        && config.resolved_executable_path
+        && config.resolved_executable_path[0] != '\0') {
+        // Relay struct lives on the stack for the duration of this call.
+        wine_log_relay_t relay;
+        relay.ctx = context;
+        relay.cb  = callback;
+        emit(context, callback, CELLARKIT_BRIDGE_EVENT_STARTED, "wine-ios starting", 0);
+        int rc = cellarkit_wine_run(
+            config.resolved_executable_path,
+            config.wineprefix_path,
+            wine_ios_log_relay,
+            &relay);
+        emit(context, callback, CELLARKIT_BRIDGE_EVENT_INTERACTIVE,
+             "wine-ios interactive", 0);
+        if (rc == 0) {
+            emit(context, callback, CELLARKIT_BRIDGE_EVENT_EXITED,
+                 "process exited cleanly (code 0)", 0);
+        } else {
+            char msg[128];
+            snprintf(msg, sizeof(msg), "wine-ios exited with code %d", rc);
+            emit(context, callback, CELLARKIT_BRIDGE_EVENT_FAILED, msg, rc);
+        }
+        cellarkit_wine_teardown();
+        return;
+    }
     emit(context, callback, CELLARKIT_BRIDGE_EVENT_LOG,
-         "[device] process execution sandboxed on iOS hardware", 0);
-    emit(context, callback, CELLARKIT_BRIDGE_EVENT_LOG,
-         "[device] running simulated output pipeline", 0);
+         "[device] wine-ios runtime not configured — using simulated pipeline", 0);
 #endif
 
     if (is_wine || is_win32 || is_d3d11p) {
@@ -318,6 +358,7 @@ static void emit_simulated_events(
     }
 }
 
+/* ── Wine iOS log relay (file-scope, used on physical device) ───── */
 /* ── public entry point ──────────────────────────────────────────── */
 
 void cellarkit_bridge_run(

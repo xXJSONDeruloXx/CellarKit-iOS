@@ -88,6 +88,27 @@ public struct RuntimeLaunchConfigurationFactory: Sendable {
 
         let runtime = resolveRuntime()
 
+        // On physical iOS hardware posix_spawn is sandboxed, so runtimeBinaryPath
+        // is unused. Instead we provide the ARM64 PE exe + Wine prefix so the
+        // in-process cellarkit_wine_run() path in cellarkit_bridge.c is taken.
+        let resolvedExe: String?
+        let resolvedPrefix: String?
+        #if targetEnvironment(simulator)
+        resolvedExe = resolveExecutablePath(
+            contentPath: contentPath,
+            entryExecutableRelativePath: entryExecutableRelativePath
+        )
+        resolvedPrefix = runtime.isWine ? resolveWinePrefix(containerID: container.id) : nil
+        #else
+        // Device: prefer ARM64 bundled exe; fall back to content-path exe.
+        resolvedExe = resolveDeviceARM64Exe(for: container)
+            ?? resolveExecutablePath(
+                contentPath: contentPath,
+                entryExecutableRelativePath: entryExecutableRelativePath)
+        // Always provide a Wine prefix on device so cellarkit_wine_run() fires.
+        resolvedPrefix = resolveWinePrefix(containerID: container.id)
+        #endif
+
         return RuntimeLaunchConfiguration(
             title: container.title,
             backend: decision.backend,
@@ -98,13 +119,10 @@ public struct RuntimeLaunchConfigurationFactory: Sendable {
             contentMode: container.contentReference?.mode,
             contentPath: contentPath,
             entryExecutableRelativePath: entryExecutableRelativePath,
-            resolvedExecutablePath: resolveExecutablePath(
-                contentPath: contentPath,
-                entryExecutableRelativePath: entryExecutableRelativePath
-            ),
+            resolvedExecutablePath: resolvedExe,
             runtimeBinaryPath: runtime.binaryPath,
             runtimeIsWine: runtime.isWine,
-            winePrefixPath: runtime.isWine ? resolveWinePrefix(containerID: container.id) : nil,
+            winePrefixPath: resolvedPrefix,
             wineDebug: runtime.isWine ? "-all" : nil,
             bookmarkIdentifier: container.contentReference?.bookmarkIdentifier,
             memoryBudgetMB: container.runtimeProfile.memoryBudgetMB,
@@ -213,6 +231,37 @@ public struct RuntimeLaunchConfigurationFactory: Sendable {
         try? FileManager.default.createDirectory(
             at: prefixDir, withIntermediateDirectories: true)
         return prefixDir.path(percentEncoded: false)
+    }
+
+    // MARK: - Device ARM64 executable resolution
+
+    /// On physical iOS, look for a native ARM64 PE in the app's Payloads bundle.
+    /// Maps well-known container names to their bundled ARM64 exe filename.
+    private func resolveDeviceARM64Exe(for container: ContainerDescriptor) -> String? {
+        let payloads = (Bundle.main.bundlePath as NSString)
+            .appendingPathComponent("Payloads")
+
+        // Explicit ARM64 variant first (e.g. hello-win32-arm64.exe)
+        let candidates: [String]
+        let titleLower = container.title.lowercased()
+        if titleLower.contains("win32") || titleLower.contains("hello") {
+            candidates = ["hello-win32-arm64.exe", "hello-win32.exe"]
+        } else if titleLower.contains("d3d11") || titleLower.contains("probe") {
+            candidates = ["hello-d3d11-probe.exe"]
+        } else if titleLower.contains("cube") {
+            candidates = ["Tutorial04.exe"]
+        } else {
+            // Generic: look for any ARM64 exe in Payloads/
+            candidates = []
+        }
+
+        for name in candidates {
+            let path = (payloads as NSString).appendingPathComponent(name)
+            if FileManager.default.fileExists(atPath: path) {
+                return path
+            }
+        }
+        return nil
     }
 
     // MARK: - Executable resolution

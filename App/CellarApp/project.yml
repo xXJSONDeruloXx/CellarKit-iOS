@@ -18,6 +18,8 @@ targets:
     deploymentTarget: "18.0"
     sources:
       - path: CellarApp
+      - path: CellarApp/WineRuntime
+        headerVisibility: project
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.cellarkit.ios.app
@@ -28,9 +30,23 @@ targets:
         TARGETED_DEVICE_FAMILY: 1,2
         SUPPORTS_MACCATALYST: NO
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        # Wine iOS runtime: static libs + header search paths
+        LIBRARY_SEARCH_PATHS: "$(SRCROOT)/Libraries"
+        OTHER_LDFLAGS: "-lntdll_unix -lwineserver -lc++"
+        HEADER_SEARCH_PATHS: "$(SRCROOT)/../../Sources/CCellarBridgeStub/include $(SRCROOT)/CellarApp/WineRuntime"
+        # JIT entitlement (needed for x86→ARM64 FEX translation, future)
+        CODE_SIGN_ENTITLEMENTS: CellarApp/CellarApp.entitlements
     dependencies:
       - package: CellarKitPackage
         product: CellarUI
+      - framework: Libraries/libntdll_unix.a
+        embed: false
+      - framework: Libraries/libwineserver.a
+        embed: false
+      - sdk: IOKit.framework
+        embed: false
+      - sdk: CoreFoundation.framework
+        embed: false
     preBuildScripts:
       - name: "Compile wine-stub"
         script: |
@@ -86,6 +102,27 @@ targets:
           - ${SRCROOT}/../../Resources/TestPayloads/hello-d3d11-probe.exe
         outputFiles:
           - ${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Payloads/hello-d3d11-probe.exe
+      - name: "Bundle ARM64 Windows payload"
+        script: |
+          set -e
+          PAYLOADS_DIR="${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Payloads"
+          mkdir -p "${PAYLOADS_DIR}"
+          cp -f "${SRCROOT}/../../Resources/TestPayloads/hello-win32-arm64.exe" \
+            "${PAYLOADS_DIR}/hello-win32-arm64.exe"
+          echo "Bundled hello-win32-arm64.exe → ${PAYLOADS_DIR}/"
+        inputFiles:
+          - ${SRCROOT}/../../Resources/TestPayloads/hello-win32-arm64.exe
+        outputFiles:
+          - ${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Payloads/hello-win32-arm64.exe
+      - name: "Bundle ARM64 Windows DLLs"
+        script: |
+          set -e
+          DLLS_DIR="${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/aarch64-windows"
+          mkdir -p "${DLLS_DIR}"
+          cp -f "${SRCROOT}/../../Resources/WineRuntime/ARM64DLLs/"* "${DLLS_DIR}/"
+          echo "Bundled $(ls ${DLLS_DIR} | wc -l | tr -d ' ') ARM64 Windows DLLs"
+        inputFiles: []
+        outputFiles: []
   CellarAppUITests:
     type: bundle.ui-testing
     platform: iOS
